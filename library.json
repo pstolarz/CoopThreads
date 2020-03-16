@@ -1,0 +1,22 @@
+{
+    "name": "CoopThreads",
+    "description": "Lightweight Cooperative Threads library",
+    "keywords": "cooperative, threads, scheduler, multitasking, arduino",
+    "authors": [
+        {
+            "name": "Piotr Stolarz",
+            "email": "pstolarz@o2.pl",
+            "maintainer": true
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pstolarz/CoopThreads"
+    },
+    "version": "0.0.0",
+    "homepage": "https://github.com/pstolarz/CoopThreads",
+    "frameworks": "Arduino",
+    "examples": [
+        "examples/*/*.ino"
+    ]
+}
