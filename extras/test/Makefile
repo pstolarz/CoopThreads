@@ -1,26 +1,34 @@
 .SILENT:
-.PHONY: all clean
+.PHONY: all clean lib libclean
 
 LIBDIR=../../src
-CFLAGS+=-D__TEST__ -Wall -DCOOP_THREADS_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
-
-TESTS=\
-     t01_sched_switch
+CFLAGS+=-Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
 
 LIBOBJS=\
-    $(LIBDIR)/coop_threads.o
+    $(LIBDIR)/coop_threads.o \
+    $(LIBDIR)/platform/unix.o
+
+TESTS=\
+    t01_sched_switch \
+    t02_idle
+
+t02_idle: TDEFS=-DT02
 
 all: $(TESTS)
-	@echo "./t01_sched_switch" && ./t01_sched_switch
+	for t in $(TESTS); do echo "TEST: $$t"; ./$$t; echo; done;
 
-clean:
-	$(RM) $(LIBDIR)/*.o
+lib: libclean $(LIBOBJS)
+
+clean: libclean
 	$(RM) *.o $(TESTS)
 
-%: %.c $(LIBOBJS)
-	$(CC) $(CFLAGS) $< -o $@ $(LIBOBJS)
+libclean:
+	$(RM) $(LIBDIR)/*.o
+	$(RM) $(LIBDIR)/platform/*.o
 
-$(LIBDIR)/coop_threads.o: $(LIBDIR)/coop_threads.h
+%: %.c
+	CFLAGS="$(TDEFS)" $(MAKE) lib
+	$(CC) $(CFLAGS) $(TDEFS) $< -o $@ $(LIBOBJS)
 
-$(LIBDIR)/%.o: $(LIBDIR)/%.c test_config.h
+$(LIBDIR)/%.o: $(LIBDIR)/%.c $(LIBDIR)/coop_threads.h test_config.h
 	$(CC) -c $(CFLAGS) $< -o $@

@@ -2,26 +2,6 @@
 
 #define THREAD_STACK_SIZE 0x50
 
-#ifdef __DEBUG__
-#ifdef ARDUINO_ARCH_AVR
-extern "C" uint16_t get_sp(void) {
-    return (((uint16_t)SPH << 8) | (uint16_t)SPL);
-}
-#endif
-
-extern "C" void coop_dbg_log_cb(const char *format, ...)
-{
-    static char msg[128] = {};
-    va_list args;
-
-    va_start(args, format);
-    vsprintf(msg, format, args);
-    va_end(args);
-
-    Serial.print(msg);
-}
-#endif
-
 /*
  * Thread routine
  */
@@ -34,7 +14,7 @@ extern "C" void thrd_proc(void *arg)
     {
         sprintf(msg, "%s: %d\n", coop_get_thread_name(), cnt+1);
         Serial.print(msg);
-        coop_sched_yield();
+        coop_yield();
     }
     sprintf(msg, "%s EXIT\n", coop_get_thread_name());
     Serial.print(msg);
@@ -72,4 +52,5 @@ void loop()
         Serial.println("All scheduled threads finished; loop() reached");
         info = true;
     }
+    delay(1000U);
 }

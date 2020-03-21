@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include <unistd.h>
-
 #include "coop_threads.h"
 
 static void thrd_proc(void *arg)
@@ -21,8 +20,8 @@ static void thrd_proc(void *arg)
 
     for (int cnt = 0; cnt < max_cnt; cnt++) {
         printf("%s: %d\n", coop_get_thread_name(), cnt+1);
-        usleep(100000);
-        coop_sched_yield();
+        usleep(50000);
+        coop_yield();
     }
     printf("%s EXIT\n", coop_get_thread_name());
 }

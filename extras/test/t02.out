@@ -1,0 +1,11 @@
+thrd_1 going idle for 1000
+thrd_2 going idle for 2500
+thrd_3 sleep for 100
+thrd_3 sleep for 100
+thrd_3 going idle for 3000
+coop_idle_cb(800) called-back
+thrd_1 EXIT; idle time: 1001
+coop_idle_cb(1499) called-back
+thrd_2 EXIT; idle time: 2500
+coop_idle_cb(700) called-back
+thrd_3 EXIT; idle time: 3000
