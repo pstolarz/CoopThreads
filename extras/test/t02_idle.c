@@ -28,10 +28,10 @@ void thrd_proc(void *arg)
     {
         coop_tick_t start = coop_tick_cb();
         coop_idle(idle_time);
-        printf("%s: %d; was idle for %lu\n", coop_get_thread_name(), i+1,
+        printf("%s: %d; was idle for %lu\n", coop_thread_name(), i+1,
             (unsigned long)(coop_tick_cb() - start));
     }
-    printf("%s EXIT\n", coop_get_thread_name());
+    printf("%s EXIT\n", coop_thread_name());
 }
 
 int main(int argc, char *argv[])

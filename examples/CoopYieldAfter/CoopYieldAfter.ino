@@ -32,7 +32,7 @@ extern "C" void thrd_proc(void *arg)
     coop_tick_t after = coop_tick_cb() + 100*prio;
 
     for (int i = 0; i < 10; i++) {
-        sprintf(msg, "%s: %d\n", coop_get_thread_name(), i+1);
+        sprintf(msg, "%s: %d\n", coop_thread_name(), i+1);
         Serial.print(msg);
 
         delay(100);
@@ -40,7 +40,7 @@ extern "C" void thrd_proc(void *arg)
             after = coop_tick_cb() + 100*prio;
         }
     }
-    sprintf(msg, "%s EXIT\n", coop_get_thread_name());
+    sprintf(msg, "%s EXIT\n", coop_thread_name());
     Serial.print(msg);
 }
 

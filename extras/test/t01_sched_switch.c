@@ -19,11 +19,11 @@ static void thrd_proc(void *arg)
     int max_cnt = (int)(size_t)arg;
 
     for (int i = 0; i < max_cnt; i++) {
-        printf("%s: %d\n", coop_get_thread_name(), i+1);
+        printf("%s: %d\n", coop_thread_name(), i+1);
         usleep(50000);
         coop_yield();
     }
-    printf("%s EXIT\n", coop_get_thread_name());
+    printf("%s EXIT\n", coop_thread_name());
 }
 
 int main(int argc, char *argv[])

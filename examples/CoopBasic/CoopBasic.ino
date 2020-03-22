@@ -30,11 +30,11 @@ extern "C" void thrd_proc(void *arg)
 
     for (int i = 0; i < max_cnt; i++)
     {
-        sprintf(msg, "%s: %d\n", coop_get_thread_name(), i+1);
+        sprintf(msg, "%s: %d\n", coop_thread_name(), i+1);
         Serial.print(msg);
         coop_yield();
     }
-    sprintf(msg, "%s EXIT\n", coop_get_thread_name());
+    sprintf(msg, "%s EXIT\n", coop_thread_name());
     Serial.print(msg);
 }
 

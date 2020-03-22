@@ -26,10 +26,10 @@ void thrd_1(void *arg)
     {
         coop_tick_t start = coop_tick_cb();
         coop_idle(200);
-        printf("%s: %d; was idle for %lu\n", coop_get_thread_name(), i+1,
+        printf("%s: %d; was idle for %lu\n", coop_thread_name(), i+1,
             (unsigned long)(coop_tick_cb() - start));
     }
-    printf("%s EXIT\n", coop_get_thread_name());
+    printf("%s EXIT\n", coop_thread_name());
 }
 
 
@@ -37,14 +37,14 @@ void thrd_2(void *arg)
 {
     for (int i = 0; i < 10; i++)
     {
-        printf("%s: %d\n", coop_get_thread_name(), i+1);
+        printf("%s: %d\n", coop_thread_name(), i+1);
         usleep(100000);
         coop_yield();
     }
 
     coop_tick_t start = coop_tick_cb();
     coop_idle(100);
-    printf("%s EXIT; last idle: %lu\n", coop_get_thread_name(),
+    printf("%s EXIT; last idle: %lu\n", coop_thread_name(),
         (unsigned long)(coop_tick_cb() - start));
 }
 

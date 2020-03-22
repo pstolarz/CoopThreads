@@ -392,7 +392,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
     return COOP_SUCCESS;
 }
 
-const char *coop_get_thread_name(void)
+const char *coop_thread_name(void)
 {
     return sched.thrds[sched.cur_thrd].name;
 }

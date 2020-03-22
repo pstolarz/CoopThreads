@@ -23,23 +23,23 @@ static void thrd_1(void *arg)
 
     for (int i=0; i < 10; i++)
     {
-        printf("%s: %d\n", coop_get_thread_name(), i+1);
+        printf("%s: %d\n", coop_thread_name(), i+1);
         usleep(5000);
 
         if (coop_yield_after(after)) {
             after = coop_tick_cb() + MAX_RUN_TIME;
         }
     }
-    printf("%s EXIT\n", coop_get_thread_name());
+    printf("%s EXIT\n", coop_thread_name());
 }
 
 static void thrd_2(void *arg)
 {
     for (int i=0; i < 5; i++) {
-        printf("%s: %d\n", coop_get_thread_name(), i+1);
+        printf("%s: %d\n", coop_thread_name(), i+1);
         coop_yield();
     }
-    printf("%s EXIT\n", coop_get_thread_name());
+    printf("%s EXIT\n", coop_thread_name());
 }
 
 int main(int argc, char *argv[])

@@ -47,11 +47,11 @@ extern "C" void thrd_proc(void *arg)
         coop_tick_t start = coop_tick_cb();
         coop_idle(idle_time);
 
-        sprintf(msg, "%s: %d; was idle for %lu\n", coop_get_thread_name(),
+        sprintf(msg, "%s: %d; was idle for %lu\n", coop_thread_name(),
             i+1, (unsigned long)(coop_tick_cb() - start));
         Serial.print(msg);
     }
-    sprintf(msg, "%s EXIT\n", coop_get_thread_name());
+    sprintf(msg, "%s EXIT\n", coop_thread_name());
     Serial.print(msg);
 }
 

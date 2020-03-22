@@ -83,7 +83,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
  *
  * @note To be called from thread routine only.
  */
-const char *coop_get_thread_name(void);
+const char *coop_thread_name(void);
 
 #ifdef CONFIG_OPT_IDLE
 /**
