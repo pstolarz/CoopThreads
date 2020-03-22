@@ -13,6 +13,7 @@
 #ifndef __COOP_THREADS_H__
 #define __COOP_THREADS_H__
 
+#include <stdbool.h>
 #include <stddef.h> /* size_t */
 #include "config.h"
 
@@ -108,9 +109,37 @@ void coop_idle(coop_tick_t period);
 
 #ifdef CONFIG_OPT_YIELD_AFTER
 /**
- * TODO
+ * Similar to @ref coop_yield() but the yield happens only if current clock
+ * tick occurs after the tick passed by @c after argument.
+ *
+ * @return @c true - the thread was yielded to the scheduler and returned back,
+ *     @c false otherwise.
+ *
+ * @note To be called from thread routine only.
+ *
+ * @note The routine is intended to be used in time-consuming loop to call
+ *     periodically to check if the routine doesn't spend too much time running
+ *     and return to the scheduler if so. To be used as in the following code
+ *     snippet:
+ *
+ * @code
+ * void thrd_proc(void *arg)
+ * {
+ *     coop_tick_t after = coop_tick_cb() + MAX_RUN_TIME;
+ *
+ *     // time-consuming loop
+ *     while (...) {
+ *         ...
+ *         // Yield the thread if the time passed. The loop will be continued
+ *         // after the scheduler will schedule the thread to run in the next
+ *         // scheduling round.
+ *         if (coop_yield_after(after))
+ *             after = coop_tick_cb() + MAX_RUN_TIME;
+ *     }
+ * }
+ * @endcode
  */
-void coop_yield_after(coop_tick_t after);
+bool coop_yield_after(coop_tick_t after);
 #endif
 
 #ifdef CONFIG_OPT_IDLE

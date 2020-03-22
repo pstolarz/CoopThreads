@@ -48,11 +48,11 @@ uint16_t get_sp(void) {
 
 #ifndef CONFIG_TICK_CB_ALT
 /**
- * Get clock tick callback.
+ * Get clock tick callback (msecs).
  */
 coop_tick_t coop_tick_cb()
 {
-    return 0;
+    return millis();
 }
 #endif
 
@@ -62,7 +62,7 @@ coop_tick_t coop_tick_cb()
  */
 void coop_idle_cb(coop_tick_t period)
 {
-    (void)period;
+    delay(period);
 }
 #endif
 

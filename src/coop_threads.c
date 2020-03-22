@@ -61,8 +61,12 @@ typedef struct
     coop_thrd_state_t state;
 
 #ifdef CONFIG_OPT_IDLE
-    /** Time tick the thread is idle up to. */
+    /** Clock tick the thread is idle up to. */
     coop_tick_t idle_to;
+#endif
+#ifdef CONFIG_OPT_YIELD_AFTER
+    /** Scheduler to thread switch clock tick */
+    coop_tick_t switch_tick;
 #endif
 
     /**
@@ -186,14 +190,14 @@ static inline unsigned _mark_unwind_thrds()
 
 #ifdef CONFIG_OPT_IDLE
 /**
- * Handle idle threads.
+ * Check conditions and enter the system idle state if necessary.
  */
-static inline void _idle(void)
+static inline void _system_idle(void)
 {
     register unsigned i = 0;
     register coop_tick_t min_idle = 0, cur_tick = 0;
 
-    /* enter the idle-loop if all active threads are idle */
+    /* system is considered idle-ready if all active threads are idle */
     while (sched.idle_n > 0 && (sched.busy_n - sched.hole_n) <= sched.idle_n)
     {
         if (i) {
@@ -215,7 +219,7 @@ static inline void _idle(void)
             if (COOP_IS_TICK_OVER(cur_tick, sched.thrds[i].idle_to))
             {
                 /* idle time passed; the idle-loop will be finished */
-                coop_dbg_log_cb("Thread #%d IDLE -> RUN\n", i);
+                coop_dbg_log_cb("Thread #%d IDLE -> RUN (via idle-loop)\n", i);
                 sched.thrds[i].state = RUN;
                 sched.idle_n--;
             } else
@@ -242,13 +246,52 @@ void coop_sched_service(void)
         sched.cur_thrd = (sched.cur_thrd + 1) % CONFIG_MAX_THREADS;
 
 #ifdef CONFIG_OPT_IDLE
-        _idle();
+        _system_idle();
 #endif
 
         switch (sched.thrds[sched.cur_thrd].state)
         {
+        case EMPTY:
+        case HOLE:
         default:
-            continue;
+            break;
+
+#ifdef CONFIG_OPT_IDLE
+        case IDLE:
+            if (!COOP_IS_TICK_OVER(
+                    coop_tick_cb(), sched.thrds[sched.cur_thrd].idle_to))
+            {
+                /* the current thread is idle but other threads are running;
+                   system can't switch to the idle state in this case */
+                break;
+            }
+
+            /* idle time passed; continue as in RUN state  */
+            coop_dbg_log_cb("Thread #%d IDLE -> RUN (via sched-loop)\n",
+                sched.cur_thrd);
+            sched.thrds[sched.cur_thrd].state = RUN;
+            sched.idle_n--;
+#endif
+            /* fall through */
+        case RUN:
+            /* sched_pos_run: main-running scheduler execution context */
+            if (!setjmp(sched.exe_ctx))
+            {
+                coop_dbg_log_cb("setjmp sched_pos_run; run thread #%d: "
+                    "longjmp thrd_pos_[new/run]\n", sched.cur_thrd);
+
+                /* jump to running thread: thrd_pos_new, thrd_pos_run */
+#ifdef CONFIG_OPT_YIELD_AFTER
+                sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
+#endif
+                longjmp(sched.thrds[sched.cur_thrd].exe_ctx, 1);
+            } else {
+                /* return from yielded running thread or restore
+                   scheduler stack after thread terminated as a hole */
+                coop_dbg_log_cb("Back to scheduler from #%d thread\n",
+                    sched.cur_thrd);
+            }
+            break;
 
         case NEW:
             /* sched_pos_entry_thrd: save a new thread entry stack state */
@@ -261,6 +304,9 @@ void coop_sched_service(void)
                 sched.thrds[sched.cur_thrd].depth = sched.depth;
 
                 /* enter the thread routine */
+#ifdef CONFIG_OPT_YIELD_AFTER
+                sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
+#endif
                 sched.thrds[sched.cur_thrd].proc(sched.thrds[sched.cur_thrd].arg);
 
                 /*
@@ -305,23 +351,6 @@ void coop_sched_service(void)
                 /* return with unwinded stack; new scheduler stack frame
                    from this point */
                 coop_dbg_log_cb("Back to scheduler; stack unwinded\n");
-            }
-            break;
-
-        case RUN:
-            /* sched_pos_run: main-running scheduler execution context */
-            if (!setjmp(sched.exe_ctx))
-            {
-                coop_dbg_log_cb("setjmp sched_pos_run; run thread #%d: "
-                    "longjmp thrd_pos_[new/run]\n", sched.cur_thrd);
-
-                /* jump to running thread: thrd_pos_new, thrd_pos_run */
-                longjmp(sched.thrds[sched.cur_thrd].exe_ctx, 1);
-            } else {
-                /* return from yielded running thread or restore
-                   scheduler stack after thread terminated as a hole */
-                coop_dbg_log_cb("Back to scheduler from #%d thread\n",
-                    sched.cur_thrd);
             }
             break;
         }
@@ -434,5 +463,20 @@ void coop_idle(coop_tick_t period)
 void coop_yield(void)
 {
     _yield(RUN);
+}
+#endif
+
+#ifdef CONFIG_OPT_YIELD_AFTER
+bool coop_yield_after(coop_tick_t after)
+{
+    if (COOP_IS_TICK_OVER(coop_tick_cb(), after))
+    {
+        coop_dbg_log_cb("Thread #%d yields after %lu tick\n",
+            sched.cur_thrd, (unsigned long)after);
+
+        _yield(RUN);
+        return true;
+    }
+    return false;
 }
 #endif

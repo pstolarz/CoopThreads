@@ -17,28 +17,41 @@
 void coop_idle_cb(coop_tick_t period)
 {
     printf("coop_idle_cb(%lu) called-back\n", (unsigned long)period);
-    usleep((useconds_t)period * 1000);
+    usleep((useconds_t)period * 1000U);
 }
 
-void thrd_proc(void *arg)
+void thrd_1(void *arg)
 {
-    coop_tick_t idle_time = (int)(size_t)arg;
-
     for (int i = 0; i < 5; i++)
     {
         coop_tick_t start = coop_tick_cb();
-        coop_idle(idle_time);
+        coop_idle(200);
         printf("%s: %d; was idle for %lu\n", coop_get_thread_name(), i+1,
             (unsigned long)(coop_tick_cb() - start));
     }
     printf("%s EXIT\n", coop_get_thread_name());
 }
 
+
+void thrd_2(void *arg)
+{
+    for (int i = 0; i < 10; i++)
+    {
+        printf("%s: %d\n", coop_get_thread_name(), i+1);
+        usleep(100000);
+        coop_yield();
+    }
+
+    coop_tick_t start = coop_tick_cb();
+    coop_idle(100);
+    printf("%s EXIT; last idle: %lu\n", coop_get_thread_name(),
+        (unsigned long)(coop_tick_cb() - start));
+}
+
 int main(int argc, char *argv[])
 {
-    coop_sched_thread(thrd_proc, "thrd_1", 0, (void*)100);
-    coop_sched_thread(thrd_proc, "thrd_2", 0, (void*)200);
-    coop_sched_thread(thrd_proc, "thrd_3", 0, (void*)300);
+    coop_sched_thread(thrd_1, "thrd_1", 0, NULL);
+    coop_sched_thread(thrd_2, "thrd_2", 0, NULL);
     coop_sched_service();
 
     return 0;

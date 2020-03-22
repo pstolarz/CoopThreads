@@ -1,0 +1,17 @@
+thrd_1: 1
+thrd_1: 2
+thrd_2: 1
+thrd_1: 3
+thrd_1: 4
+thrd_2: 2
+thrd_1: 5
+thrd_1: 6
+thrd_2: 3
+thrd_1: 7
+thrd_1: 8
+thrd_2: 4
+thrd_1: 9
+thrd_1: 10
+thrd_2: 5
+thrd_1 EXIT
+thrd_2 EXIT

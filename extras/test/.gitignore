@@ -1,2 +1,4 @@
 t01_sched_switch
 t02_idle
+t03_idle_run
+t04_yield_after

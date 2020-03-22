@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2020 Piotr Stolarz
+ * Lightweight Cooperative Threads library
+ *
+ * Distributed under the 2-clause BSD License (the License)
+ * see accompanying file LICENSE for details.
+ *
+ * This software is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the License for more information.
+ */
+
+/**
+ * Basic example presenting threads switching by yielding them to the scheduler.
+ *
+ * Required configuration:
+ *     CONFIG_MAX_THREADS >= 5
+ */
 #include "coop_threads.h"
 
 #define THREAD_STACK_SIZE 0x50
@@ -10,9 +28,9 @@ extern "C" void thrd_proc(void *arg)
     int max_cnt = (int)(size_t)arg;
     char msg[16] = {};
 
-    for (int cnt = 0; cnt < max_cnt; cnt++)
+    for (int i = 0; i < max_cnt; i++)
     {
-        sprintf(msg, "%s: %d\n", coop_get_thread_name(), cnt+1);
+        sprintf(msg, "%s: %d\n", coop_get_thread_name(), i+1);
         Serial.print(msg);
         coop_yield();
     }
@@ -52,5 +70,5 @@ void loop()
         Serial.println("All scheduled threads finished; loop() reached");
         info = true;
     }
-    delay(1000U);
+    delay(1000);
 }

@@ -1,5 +1,5 @@
 .SILENT:
-.PHONY: all clean lib libclean
+.PHONY: all build clean lib libclean
 
 LIBDIR=../../src
 CFLAGS+=-Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
@@ -10,12 +10,18 @@ LIBOBJS=\
 
 TESTS=\
     t01_sched_switch \
-    t02_idle
+    t02_idle \
+    t03_idle_run \
+    t04_yield_after
 
 t02_idle: TDEFS=-DT02
+t03_idle_run: TDEFS=-DT03
+t04_yield_after: TDEFS=-DT04
 
-all: $(TESTS)
+all: build
 	for t in $(TESTS); do echo "TEST: $$t"; ./$$t; echo; done;
+
+build: $(TESTS)
 
 lib: libclean $(LIBOBJS)
 

@@ -1,0 +1,18 @@
+thrd_2: 1
+thrd_2: 2
+thrd_1: 1; was idle for 200
+thrd_2: 3
+thrd_2: 4
+thrd_1: 2; was idle for 201
+thrd_2: 5
+thrd_2: 6
+thrd_1: 3; was idle for 200
+thrd_2: 7
+thrd_2: 8
+thrd_1: 4; was idle for 200
+thrd_2: 9
+thrd_2: 10
+thrd_1: 5; was idle for 200
+thrd_1 EXIT
+coop_idle_cb(100) called-back
+thrd_2 EXIT; last idle: 100

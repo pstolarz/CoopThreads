@@ -18,8 +18,8 @@ static void thrd_proc(void *arg)
 {
     int max_cnt = (int)(size_t)arg;
 
-    for (int cnt = 0; cnt < max_cnt; cnt++) {
-        printf("%s: %d\n", coop_get_thread_name(), cnt+1);
+    for (int i = 0; i < max_cnt; i++) {
+        printf("%s: %d\n", coop_get_thread_name(), i+1);
         usleep(50000);
         coop_yield();
     }

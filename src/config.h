@@ -37,7 +37,7 @@
 /**
  * Enable feature: @ref coop_yield_after() support.
  */
-//#define CONFIG_OPT_YIELD_AFTER
+#define CONFIG_OPT_YIELD_AFTER
 
 /**
  * Uncomment to log debugging messages.
