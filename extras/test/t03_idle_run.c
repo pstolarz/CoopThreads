@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Piotr Stolarz
- * Lightweight Cooperative Threads library
+ * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
  * see accompanying file LICENSE for details.

@@ -2,7 +2,7 @@
 .PHONY: all build clean lib libclean
 
 LIBDIR=../../src
-CFLAGS+=-Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
+CFLAGS+=-D__TEST__ -Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
 
 LIBOBJS=\
     $(LIBDIR)/coop_threads.o \
@@ -12,21 +12,31 @@ TESTS=\
     t01_sched_switch \
     t02_idle \
     t03_idle_run \
-    t04_yield_after
+    t04_yield_after \
+    t05_wait_notify_sngl \
+    t06_wait_notify_all
 
+STRESS_TESTS=\
+    st01_enter_exit
+
+t01_sched_switch: TDEFS=-DT01
 t02_idle: TDEFS=-DT02
 t03_idle_run: TDEFS=-DT03
 t04_yield_after: TDEFS=-DT04
+t05_wait_notify_sngl: TDEFS+=-DT05
+t06_wait_notify_all: TDEFS+=-DT06
+
+st01_enter_exit: TDEFS+=-DST01
 
 all: build
 	for t in $(TESTS); do echo "TEST: $$t"; ./$$t; echo; done;
 
-build: $(TESTS)
+build: $(TESTS) $(STRESS_TESTS)
 
 lib: libclean $(LIBOBJS)
 
 clean: libclean
-	$(RM) *.o $(TESTS)
+	$(RM) *.o $(TESTS) $(STRESS_TESTS)
 
 libclean:
 	$(RM) $(LIBDIR)/*.o

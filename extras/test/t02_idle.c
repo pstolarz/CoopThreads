@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Piotr Stolarz
- * Lightweight Cooperative Threads library
+ * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
  * see accompanying file LICENSE for details.
@@ -22,7 +22,7 @@ void coop_idle_cb(coop_tick_t period)
 
 void thrd_proc(void *arg)
 {
-    coop_tick_t idle_time = (int)(size_t)arg;
+    coop_tick_t idle_time = (coop_tick_t)(size_t)arg;
 
     for (int i = 0; i < 5; i++)
     {
@@ -36,9 +36,9 @@ void thrd_proc(void *arg)
 
 int main(int argc, char *argv[])
 {
-    coop_sched_thread(thrd_proc, "thrd_1", 0, (void*)100);
-    coop_sched_thread(thrd_proc, "thrd_2", 0, (void*)200);
-    coop_sched_thread(thrd_proc, "thrd_3", 0, (void*)300);
+    coop_sched_thread(thrd_proc, "thrd_1", 0, (void*)(size_t)100U);
+    coop_sched_thread(thrd_proc, "thrd_2", 0, (void*)(size_t)200U);
+    coop_sched_thread(thrd_proc, "thrd_3", 0, (void*)(size_t)300U);
     coop_sched_service();
 
     return 0;

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Piotr Stolarz
- * Lightweight Cooperative Threads library
+ * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
  * see accompanying file LICENSE for details.
@@ -38,9 +38,9 @@ void coop_dbg_log_cb(const char *format, ...)
 
 #ifdef ARDUINO_ARCH_AVR
 /**
- * Get stack pointer (AVR only).
+ * Supplementary debug routine: get stack pointer (AVR only).
  */
-uint16_t get_sp(void) {
+uint16_t coop_avr_get_sp(void) {
     return (((uint16_t)SPH << 8) | (uint16_t)SPL);
 }
 #endif

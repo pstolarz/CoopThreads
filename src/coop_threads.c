@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Piotr Stolarz
- * Lightweight Cooperative Threads library
+ * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
  * see accompanying file LICENSE for details.
@@ -29,6 +29,9 @@ typedef enum
 #ifdef CONFIG_OPT_IDLE
     IDLE,       /** Thread is idle. */
 #endif
+#ifdef CONFIG_OPT_WAIT
+    WAIT,       /** Waiting thread. */
+#endif
 } coop_thrd_state_t;
 
 #ifdef CONFIG_OPT_IDLE
@@ -37,8 +40,20 @@ typedef enum
 # define _IS_IDLE(_state) (0)
 #endif
 
+#ifdef CONFIG_OPT_WAIT
+# define _IS_WAIT(_state) ((_state) == WAIT)
+#else
+# define _IS_WAIT(_state) (0)
+#endif
+
 /* started thread in an active thread with allocated stack (therefore not NEW) */
-#define _IS_STARTED(_state) ((_state) == RUN || _IS_IDLE(_state))
+#define _IS_STARTED(_state) \
+    ((_state) == RUN || _IS_IDLE(_state) || _IS_WAIT(_state))
+
+#define _STATE_NAME(_state) \
+    (_IS_WAIT(_state) ? "WAIT" : (_IS_IDLE(_state) ? "IDLE" : \
+    ((_state) == RUN ? "RUN" : ((_state) == NEW ? "NEW" : \
+    ((_state) == HOLE ? "HOLE" : "EMPTY")))))
 
 /**
  * Thread context.
@@ -67,6 +82,20 @@ typedef struct
 #ifdef CONFIG_OPT_YIELD_AFTER
     /** Scheduler to thread switch clock tick */
     coop_tick_t switch_tick;
+#endif
+#ifdef CONFIG_OPT_WAIT
+    /** Semaphore id. */
+    int sem_id;
+
+    /** Clock tick the thread is waiting up to. */
+    coop_tick_t wait_to;
+
+    /** Waiting related flags. */
+    struct {
+        unsigned char notif: 1; /** Notified flag. */
+        unsigned char inf:   1; /** Infinite wait; @c wait_to not applied. */
+        unsigned char res:   6; /** Reserved. */
+    } wait_flgs;
 #endif
 
     /**
@@ -271,9 +300,30 @@ void coop_sched_service(void)
                 sched.cur_thrd);
             sched.thrds[sched.cur_thrd].state = RUN;
             sched.idle_n--;
+            goto run;
 #endif
-            /* fall through */
+
+#ifdef CONFIG_OPT_WAIT
+        case WAIT:
+            if (sched.thrds[sched.cur_thrd].wait_flgs.inf ||
+                !COOP_IS_TICK_OVER(
+                    coop_tick_cb(), sched.thrds[sched.cur_thrd].wait_to))
+            {
+                /* not-notified infinite or not yet timed-out waiting thread */
+                break;
+            }
+
+            /* wait time passed; continue as in RUN state  */
+            coop_dbg_log_cb("Thread #%d WAIT -> RUN (timed-out)\n",
+                sched.cur_thrd);
+            sched.thrds[sched.cur_thrd].state = RUN;
+            goto run;
+#endif
+
         case RUN:
+#if defined(CONFIG_OPT_IDLE) || defined(CONFIG_OPT_WAIT)
+run:
+#endif
             /* sched_pos_run: main-running scheduler execution context */
             if (!setjmp(sched.exe_ctx))
             {
@@ -398,8 +448,7 @@ const char *coop_thread_name(void)
 }
 
 /**
- * In case the current thread is in the NEW state @c new_state specifies a new
- * state, which will be set afterwards.
+ * @c new_state specifies a state to set before yielding (RUN, IDLE, WAIT).
  */
 inline static void _yield(coop_thrd_state_t new_state)
 {
@@ -410,7 +459,7 @@ inline static void _yield(coop_thrd_state_t new_state)
         if (!setjmp(sched.thrds[sched.cur_thrd].exe_ctx))
         {
             coop_dbg_log_cb("setjmp thrd_pos_new; thread #%d: NEW -> %s\n",
-                sched.cur_thrd, (_IS_IDLE(new_state) ? "IDLE" : "RUN"));
+                sched.cur_thrd, _STATE_NAME(new_state));
 
             /* allocate thread stack */
             memset(alloca(sched.thrds[sched.cur_thrd].stack_sz), 0,
@@ -424,6 +473,14 @@ inline static void _yield(coop_thrd_state_t new_state)
                 sched.cur_thrd);
         }
     } else {
+#ifdef COOP_DEBUG
+        if (new_state != RUN) {
+            coop_dbg_log_cb("Thread #%d: RUN -> %s\n",
+                sched.cur_thrd, _STATE_NAME(new_state));
+        }
+#endif
+        sched.thrds[sched.cur_thrd].state = new_state;
+
         /* thrd_pos_run: main-running thread context */
         if (!setjmp(sched.thrds[sched.cur_thrd].exe_ctx))
         {
@@ -449,12 +506,8 @@ void coop_idle(coop_tick_t period)
         coop_dbg_log_cb("Thread #%d going idle for %lu ticks\n",
             sched.cur_thrd, (unsigned long)period);
 
+        new_state = IDLE;
         sched.idle_n++;
-        if (sched.thrds[sched.cur_thrd].state == NEW) {
-            new_state = IDLE;
-        } else {
-            sched.thrds[sched.cur_thrd].state = IDLE;
-        }
         sched.thrds[sched.cur_thrd].idle_to = coop_tick_cb() + period;
     }
     _yield(new_state);
@@ -478,5 +531,72 @@ bool coop_yield_after(coop_tick_t after)
         return true;
     }
     return false;
+}
+#endif
+
+#ifdef CONFIG_OPT_WAIT
+bool coop_wait(int sem_id, coop_tick_t timeout)
+{
+    sched.thrds[sched.cur_thrd].sem_id = sem_id;
+    sched.thrds[sched.cur_thrd].wait_flgs.notif = 0;
+    if (timeout) {
+        sched.thrds[sched.cur_thrd].wait_to = coop_tick_cb() + timeout;
+        sched.thrds[sched.cur_thrd].wait_flgs.inf = 0;
+
+        coop_dbg_log_cb("Thread #%d waiting with timeout %lu ticks; "
+            "sem_id: %d\n", sched.cur_thrd, (unsigned long)timeout, sem_id);
+    } else {
+        sched.thrds[sched.cur_thrd].wait_to = 0;
+        sched.thrds[sched.cur_thrd].wait_flgs.inf = 1;
+
+        coop_dbg_log_cb("Thread #%d waiting infinitely; sem_id: %d\n",
+            sched.cur_thrd, sem_id);
+    }
+
+    _yield(WAIT);
+
+    if (sched.thrds[sched.cur_thrd].wait_flgs.notif != 0) {
+        coop_dbg_log_cb("Thread #%d notified on sem_id: %d\n",
+            sched.cur_thrd, sem_id);
+        return true;
+    } else {
+        coop_dbg_log_cb("Thread #%d wait-timeout; sem_id: %d\n",
+            sched.cur_thrd, sem_id);
+        return false;
+    }
+}
+
+void coop_notify(int sem_id)
+{
+    for (unsigned i = 0; i < CONFIG_MAX_THREADS; i++) {
+        if (sched.thrds[i].state == WAIT && sched.thrds[i].sem_id == sem_id) {
+            coop_dbg_log_cb("Thread #%d WAIT -> RUN "
+                "(single notify on sem_id: %d)\n", i, sem_id);
+
+            sched.thrds[i].wait_flgs.notif = 1;
+            sched.thrds[i].state = RUN;
+            break;
+        }
+    }
+}
+
+void coop_notify_all(int sem_id)
+{
+    for (unsigned i = 0; i < CONFIG_MAX_THREADS; i++) {
+        if (sched.thrds[i].state == WAIT && sched.thrds[i].sem_id == sem_id) {
+            coop_dbg_log_cb("Thread #%d WAIT -> RUN "
+                "(all notify on sem_id)\n", i, sem_id);
+
+            sched.thrds[i].wait_flgs.notif = 1;
+            sched.thrds[i].state = RUN;
+        }
+    }
+}
+#endif
+
+#ifdef __TEST__
+bool coop_test_is_shallow()
+{
+    return (sched.depth == sched.thrds[sched.cur_thrd].depth);
 }
 #endif

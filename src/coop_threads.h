@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Piotr Stolarz
- * Lightweight Cooperative Threads library
+ * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
  * see accompanying file LICENSE for details.
@@ -160,7 +160,9 @@ void coop_yield(void);
  * Platform specific callbacks specification section.
  */
 
-#if defined(CONFIG_OPT_IDLE) || defined(CONFIG_OPT_YIELD_AFTER)
+#if defined(CONFIG_OPT_IDLE) || \
+    defined(CONFIG_OPT_YIELD_AFTER) || \
+    defined(CONFIG_OPT_WAIT)
 /**
  * Get clock tick for the routine call time callback.
  */
@@ -180,6 +182,46 @@ coop_tick_t coop_tick_cb();
 void coop_idle_cb(coop_tick_t period);
 #endif
 
+#ifdef CONFIG_OPT_WAIT
+/**
+ * Switch current thread into wait-for-notification-signal state.
+ *
+ * @param sem_id Semaphore id. This is an arbitrary chosen integer value used
+ *     to match waiting thread(s) with a notification signal.
+ * @param timeout A timeout value the thread will wait for a notification
+ *     before timeout will be reported. Pass @c 0 for infinite wait.
+ *
+ * @return @c true - notification signal received, @c false - timeout.
+ *
+ * @note To be called from thread routine only.
+ *
+ * @see coop_notify()
+ * @see coop_notify_all()
+ */
+bool coop_wait(int sem_id, coop_tick_t timeout);
+
+/**
+ * Send notification signal for a single thread waiting on @c sem_id.
+ *
+ * @note To be called from arbitrary routine including ISR.
+ *
+ * @note While calling from ISR debug logs must be disabled or handled in
+ *     a special way (see @ref CONFIG_DBG_LOG_CB_ALT) to avoid interrupt
+ *     service related issues.
+ *
+ * @see coop_wait()
+ */
+void coop_notify(int sem_id);
+
+/**
+ * Send notification signal for all threads waiting on @c sem_id.
+ *
+ * @see coop_notify() for additional notes.
+ * @see coop_wait()
+ */
+void coop_notify_all(int sem_id);
+#endif
+
 #ifdef COOP_DEBUG
 /**
  * Debug message log callback.
@@ -194,4 +236,7 @@ void coop_dbg_log_cb(const char *format, ...);
 }
 #endif
 
+#ifdef __TEST__
+bool coop_test_is_shallow(void);
+#endif
 #endif /* __COOP_THREADS_H__ */

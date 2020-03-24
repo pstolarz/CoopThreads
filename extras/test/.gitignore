@@ -2,3 +2,7 @@ t01_sched_switch
 t02_idle
 t03_idle_run
 t04_yield_after
+t05_wait_notify_sngl
+t06_wait_notify_all
+
+st01_enter_exit

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Piotr Stolarz
- * Lightweight Cooperative Threads library
+ * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
  * see accompanying file LICENSE for details.
@@ -40,6 +40,11 @@
 #define CONFIG_OPT_YIELD_AFTER
 
 /**
+ * Enable feature: @ref coop_wait(), @ref coop_notify() support.
+ */
+#define CONFIG_OPT_WAIT
+
+/**
  * Uncomment to log debugging messages.
  *
  * @note Usage of this option usually requires increasing of the thread stack
@@ -74,7 +79,7 @@
  *
  * @note The configuration parameter is valid only if at least one of
  *     the following features is enabled: @ref CONFIG_OPT_YIELD_AFTER,
- *     @ref CONFIG_OPT_IDLE.
+ *     @ref CONFIG_OPT_IDLE, @ref CONFIG_OPT_WAIT.
  */
 //#define CONFIG_TICK_CB_ALT
 

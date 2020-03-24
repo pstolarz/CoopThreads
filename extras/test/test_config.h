@@ -10,3 +10,14 @@
 #ifdef T04
 # define CONFIG_OPT_YIELD_AFTER
 #endif
+
+#if defined(T05) || defined(T06)
+# define CONFIG_OPT_WAIT
+# define CONFIG_OPT_IDLE
+#endif
+
+#ifdef ST01
+# define CONFIG_OPT_YIELD_AFTER
+# define CONFIG_OPT_IDLE
+# define CONFIG_OPT_WAIT
+#endif

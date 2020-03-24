@@ -1,3 +1,3 @@
 # CoopThreads
 
-Lightweight Cooperative Threads library.
+Lightweight cooperative threads library.

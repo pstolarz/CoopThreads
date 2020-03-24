@@ -1,6 +1,6 @@
 {
     "name": "CoopThreads",
-    "description": "Lightweight Cooperative Threads library",
+    "description": "Lightweight cooperative threads library",
     "keywords": "cooperative, threads, scheduler, multitasking, arduino",
     "authors": [
         {
