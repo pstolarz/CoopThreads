@@ -15,7 +15,7 @@
 
 #include <stdbool.h>
 #include <stddef.h> /* size_t */
-#include "config.h"
+#include "coop_config.h"
 
 #ifdef __cplusplus
 extern "C" {

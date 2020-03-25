@@ -10,8 +10,8 @@
  * See the License for more information.
  */
 
-#ifndef __COOP_THREADS_CONFIG_H__
-#define __COOP_THREADS_CONFIG_H__
+#ifndef __COOP_CONFIG_H__
+#define __COOP_CONFIG_H__
 
 #ifdef COOP_CONFIG_FILE
 /* use user defined config file instead of this one */
@@ -93,4 +93,4 @@
 //#define CONFIG_IDLE_CB_ALT
 
 #endif /* !COOP_DISABLE_DEFAULT_CONFIG */
-#endif /* __COOP_THREADS_CONFIG_H__ */
+#endif /* __COOP_CONFIG_H__ */
