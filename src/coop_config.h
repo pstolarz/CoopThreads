@@ -45,10 +45,16 @@
 #define CONFIG_OPT_WAIT
 
 /**
+ * Enable feature: @ref coop_idle_wait() support.
+ */
+//#define CONFIG_OPT_IDLE_WAIT
+
+/**
  * Uncomment to log debugging messages.
  *
- * @note Usage of this option usually requires increasing of the thread stack
- *     sizes due to additional logging overhead.
+ * @note Usage of this option usually requires substantial increasing of the
+ *     thread stack sizes due to additional logging overhead. This may limit
+ *     usage of this parameter on resource-constrained platforms.
  */
 //#define COOP_DEBUG
 

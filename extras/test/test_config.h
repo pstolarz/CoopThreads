@@ -11,13 +11,22 @@
 # define CONFIG_OPT_YIELD_AFTER
 #endif
 
-#if defined(T05) || defined(T06)
+#ifdef T05
+# define CONFIG_OPT_WAIT
+#endif
+
+#ifdef T06
 # define CONFIG_OPT_WAIT
 # define CONFIG_OPT_IDLE
 #endif
 
-#ifdef ST01
-# define CONFIG_OPT_YIELD_AFTER
-# define CONFIG_OPT_IDLE
+#ifdef T07
 # define CONFIG_OPT_WAIT
+# define CONFIG_OPT_IDLE
+# define CONFIG_OPT_IDLE_WAIT
+# define CONFIG_IDLE_CB_ALT
+#endif
+
+#ifdef ST01
+# define CONFIG_OPT_IDLE
 #endif

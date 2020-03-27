@@ -16,6 +16,11 @@
 #include <string.h> /* memset() */
 #include "coop_threads.h"
 
+#if defined(CONFIG_OPT_IDLE_WAIT) && \
+    !(defined(CONFIG_OPT_IDLE) && defined(CONFIG_OPT_WAIT))
+# error "CONFIG_OPT_IDLE_WAIT requires CONFIG_OPT_IDLE and CONFIG_OPT_WAIT"
+#endif
+
 /**
  * Thread states.
  */
@@ -49,11 +54,6 @@ typedef enum
 /* started thread in an active thread with allocated stack (therefore not NEW) */
 #define _IS_STARTED(_state) \
     ((_state) == RUN || _IS_IDLE(_state) || _IS_WAIT(_state))
-
-#define _STATE_NAME(_state) \
-    (_IS_WAIT(_state) ? "WAIT" : (_IS_IDLE(_state) ? "IDLE" : \
-    ((_state) == RUN ? "RUN" : ((_state) == NEW ? "NEW" : \
-    ((_state) == HOLE ? "HOLE" : "EMPTY")))))
 
 /**
  * Thread context.
@@ -94,7 +94,9 @@ typedef struct
     struct {
         unsigned char notif: 1; /** Notified flag. */
         unsigned char inf:   1; /** Infinite wait; @c wait_to not applied. */
-        unsigned char res:   6; /** Reserved. */
+        unsigned char idle:  1; /** Idle wait (ignored if @c CONFIG_OPT_IDLE_WAIT
+                                    is not configured). */
+        unsigned char res:   5; /** Reserved. */
     } wait_flgs;
 #endif
 
@@ -126,7 +128,7 @@ typedef struct
     unsigned hole_n;
 
 #ifdef CONFIG_OPT_IDLE
-    /** Number of idle threads. */
+    /** Number of idle and idle-wait threads. */
     unsigned idle_n;
 #endif
 
@@ -145,7 +147,33 @@ typedef struct
 static coop_sched_ctx_t sched = {};
 
 
-static void _sched_init(bool force)
+#ifdef COOP_DEBUG
+static const char *_state_name(unsigned i)
+{
+    switch (sched.thrds[i].state)
+    {
+    case EMPTY:
+        return "EMPTY";
+    case HOLE:
+        return "HOLE";
+    case NEW:
+        return "NEW";
+    case RUN:
+        return "RUN";
+# ifdef CONFIG_OPT_IDLE
+    case IDLE:
+        return "IDLE";
+# endif
+# ifdef CONFIG_OPT_WAIT
+    case WAIT:
+        return (sched.thrds[i].wait_flgs.idle ? "idle WAIT" : "WAIT");
+# endif
+    }
+    return "???";
+}
+#endif
+
+static inline void _sched_init(bool force)
 {
     static bool inited = false;
 
@@ -226,15 +254,21 @@ static inline void _system_idle(void)
     register unsigned i = 0;
     register coop_tick_t min_idle = 0, cur_tick = 0;
 
-    /* system is considered idle-ready if all active threads are idle */
+    /* system is considered idle-ready if all active threads are idle or idle-wait */
     while (sched.idle_n > 0 && (sched.busy_n - sched.hole_n) <= sched.idle_n)
     {
         if (i) {
-            coop_dbg_log_cb(
-                "System going idle for %lu ticks\n", (unsigned long)min_idle);
-
+# ifdef COOP_DEBUG
+            if (min_idle == COOP_MAX_TICK) {
+                coop_dbg_log_cb("System going idle infinitely\n",
+                    (unsigned long)min_idle);
+            } else {
+                coop_dbg_log_cb("System going idle for %lu ticks\n",
+                    (unsigned long)min_idle);
+            }
+# endif
             /* subsequent loop pass; system is idle up to nearest wake-up time */
-            coop_idle_cb(min_idle);
+            coop_idle_cb(min_idle == COOP_MAX_TICK ? 0 : min_idle);
         }
 
         min_idle = COOP_MAX_TICK;
@@ -242,24 +276,39 @@ static inline void _system_idle(void)
 
         for (i = 0; i < CONFIG_MAX_THREADS; i++)
         {
-            if (sched.thrds[i].state != IDLE) {
-                continue;
-            } else
-            if (COOP_IS_TICK_OVER(cur_tick, sched.thrds[i].idle_to))
+            if (!(_IS_IDLE(sched.thrds[i].state)
+# ifdef CONFIG_OPT_IDLE_WAIT
+                || (_IS_WAIT(sched.thrds[i].state) &&
+                    sched.thrds[i].wait_flgs.idle &&
+                    !sched.thrds[i].wait_flgs.inf)
+# endif
+                ))
             {
-                /* idle time passed; the idle-loop will be finished */
-                coop_dbg_log_cb("Thread #%d IDLE -> RUN (via idle-loop)\n", i);
-                sched.thrds[i].state = RUN;
-                sched.idle_n--;
-            } else
-            if ((sched.thrds[i].idle_to - cur_tick) < min_idle) {
-                /* calculate nearest wake-up time */
-                min_idle = (sched.thrds[i].idle_to - cur_tick);
+                continue;
+            } else {
+                register coop_tick_t idle_to = (
+# ifdef CONFIG_OPT_IDLE_WAIT
+                    !_IS_IDLE(sched.thrds[i].state) ? sched.thrds[i].wait_to :
+# endif
+                    sched.thrds[i].idle_to);
+
+                if (COOP_IS_TICK_OVER(cur_tick, idle_to)) {
+                    coop_dbg_log_cb("Thread #%d %s -> RUN (via idle-loop)\n",
+                        i, _state_name(i));
+
+                    /* idle time passed; the idle-loop will be finished */
+                    sched.thrds[i].state = RUN;
+                    sched.idle_n--;
+                } else
+                if ((idle_to - cur_tick) < min_idle) {
+                    /* calculate nearest wake-up time */
+                    min_idle = (idle_to - cur_tick);
+                }
             }
         }
     }
 }
-#endif
+#endif /* CONFIG_OPT_IDLE */
 
 void coop_sched_service(void)
 {
@@ -313,10 +362,15 @@ void coop_sched_service(void)
                 break;
             }
 
+            coop_dbg_log_cb(
+                "Thread #%d %s -> RUN (timed-out)\n",
+                sched.cur_thrd, _state_name(sched.cur_thrd));
+
             /* wait time passed; continue as in RUN state  */
-            coop_dbg_log_cb("Thread #%d WAIT -> RUN (timed-out)\n",
-                sched.cur_thrd);
             sched.thrds[sched.cur_thrd].state = RUN;
+# ifdef CONFIG_OPT_IDLE_WAIT
+            if (sched.thrds[sched.cur_thrd].wait_flgs.idle) sched.idle_n--;
+# endif
             goto run;
 #endif
 
@@ -450,7 +504,7 @@ const char *coop_thread_name(void)
 /**
  * @c new_state specifies a state to set before yielding (RUN, IDLE, WAIT).
  */
-inline static void _yield(coop_thrd_state_t new_state)
+static inline void _yield(coop_thrd_state_t new_state)
 {
     if (sched.thrds[sched.cur_thrd].state == NEW) {
         sched.thrds[sched.cur_thrd].state = new_state;
@@ -459,7 +513,7 @@ inline static void _yield(coop_thrd_state_t new_state)
         if (!setjmp(sched.thrds[sched.cur_thrd].exe_ctx))
         {
             coop_dbg_log_cb("setjmp thrd_pos_new; thread #%d: NEW -> %s\n",
-                sched.cur_thrd, _STATE_NAME(new_state));
+                sched.cur_thrd, _state_name(sched.cur_thrd));
 
             /* allocate thread stack */
             memset(alloca(sched.thrds[sched.cur_thrd].stack_sz), 0,
@@ -473,13 +527,13 @@ inline static void _yield(coop_thrd_state_t new_state)
                 sched.cur_thrd);
         }
     } else {
+        sched.thrds[sched.cur_thrd].state = new_state;
 #ifdef COOP_DEBUG
         if (new_state != RUN) {
             coop_dbg_log_cb("Thread #%d: RUN -> %s\n",
-                sched.cur_thrd, _STATE_NAME(new_state));
+                sched.cur_thrd, _state_name(sched.cur_thrd));
         }
 #endif
-        sched.thrds[sched.cur_thrd].state = new_state;
 
         /* thrd_pos_run: main-running thread context */
         if (!setjmp(sched.thrds[sched.cur_thrd].exe_ctx))
@@ -535,16 +589,18 @@ bool coop_yield_after(coop_tick_t after)
 #endif
 
 #ifdef CONFIG_OPT_WAIT
-bool coop_wait(int sem_id, coop_tick_t timeout)
+static inline bool _wait(int sem_id, coop_tick_t timeout, unsigned idle)
 {
     sched.thrds[sched.cur_thrd].sem_id = sem_id;
     sched.thrds[sched.cur_thrd].wait_flgs.notif = 0;
+    sched.thrds[sched.cur_thrd].wait_flgs.idle = idle;
     if (timeout) {
         sched.thrds[sched.cur_thrd].wait_to = coop_tick_cb() + timeout;
         sched.thrds[sched.cur_thrd].wait_flgs.inf = 0;
 
-        coop_dbg_log_cb("Thread #%d waiting with timeout %lu ticks; "
-            "sem_id: %d\n", sched.cur_thrd, (unsigned long)timeout, sem_id);
+        coop_dbg_log_cb("Thread #%d %swaiting with timeout %lu ticks; "
+            "sem_id: %d\n", sched.cur_thrd, (idle ? "idle-" : ""),
+            (unsigned long)timeout, sem_id);
     } else {
         sched.thrds[sched.cur_thrd].wait_to = 0;
         sched.thrds[sched.cur_thrd].wait_flgs.inf = 1;
@@ -552,6 +608,9 @@ bool coop_wait(int sem_id, coop_tick_t timeout)
         coop_dbg_log_cb("Thread #%d waiting infinitely; sem_id: %d\n",
             sched.cur_thrd, sem_id);
     }
+# ifdef CONFIG_OPT_IDLE_WAIT
+    if (idle) sched.idle_n++;
+# endif
 
     _yield(WAIT);
 
@@ -560,37 +619,50 @@ bool coop_wait(int sem_id, coop_tick_t timeout)
             sched.cur_thrd, sem_id);
         return true;
     } else {
-        coop_dbg_log_cb("Thread #%d wait-timeout; sem_id: %d\n",
-            sched.cur_thrd, sem_id);
+        coop_dbg_log_cb("Thread #%d %swait-timeout; sem_id: %d\n",
+            sched.cur_thrd, (idle ? "idle-" : ""), sem_id);
         return false;
+    }
+}
+
+bool coop_wait(int sem_id, coop_tick_t timeout)
+{
+   return _wait(sem_id, timeout, 0);
+}
+
+static inline void _notify(int sem_id, bool single)
+{
+    for (unsigned i = 0; i < CONFIG_MAX_THREADS; i++) {
+        if (_IS_WAIT(sched.thrds[i].state) && sched.thrds[i].sem_id == sem_id)
+        {
+            coop_dbg_log_cb("Thread #%d %s -> RUN (%s-notify on sem_id: %d)\n",
+                i, _state_name(i), (single ? "single" : "all"), sem_id);
+
+            sched.thrds[i].wait_flgs.notif = 1;
+            sched.thrds[i].state = RUN;
+# ifdef CONFIG_OPT_IDLE_WAIT
+            if (sched.thrds[i].wait_flgs.idle) sched.idle_n--;
+# endif
+            if (single) break;
+        }
     }
 }
 
 void coop_notify(int sem_id)
 {
-    for (unsigned i = 0; i < CONFIG_MAX_THREADS; i++) {
-        if (sched.thrds[i].state == WAIT && sched.thrds[i].sem_id == sem_id) {
-            coop_dbg_log_cb("Thread #%d WAIT -> RUN "
-                "(single notify on sem_id: %d)\n", i, sem_id);
-
-            sched.thrds[i].wait_flgs.notif = 1;
-            sched.thrds[i].state = RUN;
-            break;
-        }
-    }
+    _notify(sem_id, true);
 }
 
 void coop_notify_all(int sem_id)
 {
-    for (unsigned i = 0; i < CONFIG_MAX_THREADS; i++) {
-        if (sched.thrds[i].state == WAIT && sched.thrds[i].sem_id == sem_id) {
-            coop_dbg_log_cb("Thread #%d WAIT -> RUN "
-                "(all notify on sem_id)\n", i, sem_id);
+    _notify(sem_id, false);
+}
+#endif /* CONFIG_OPT_WAIT */
 
-            sched.thrds[i].wait_flgs.notif = 1;
-            sched.thrds[i].state = RUN;
-        }
-    }
+#ifdef CONFIG_OPT_IDLE_WAIT
+bool coop_idle_wait(int sem_id, coop_tick_t timeout)
+{
+   return _wait(sem_id, timeout, 1);
 }
 #endif
 

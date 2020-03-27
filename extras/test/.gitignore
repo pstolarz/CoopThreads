@@ -4,5 +4,6 @@ t03_idle_run
 t04_yield_after
 t05_wait_notify_sngl
 t06_wait_notify_all
+t07_idle_wait
 
 st01_enter_exit
