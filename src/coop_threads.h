@@ -59,6 +59,10 @@ typedef unsigned long coop_tick_t;
 /**
  * Run scheduler service to run scheduled threads.
  * The routine returns when last scheduled thread ends.
+ *
+ * @note If the library is compiled with @ref CONFIG_NOEXIT_STATIC_THREADS
+ *     the routine is not intended to exit. @c coop_sched_service() ends
+ *     at assertion check in case all scheduled thread would finish.
  */
 void coop_sched_service(void);
 

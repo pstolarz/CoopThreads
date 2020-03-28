@@ -50,6 +50,20 @@
 //#define CONFIG_OPT_IDLE_WAIT
 
 /**
+ * If the library is used to create static number of threads at its startup
+ * and the threads are not intended to exit, this parameter may be configured
+ * to reduce the library footprint and memory usage.
+ *
+ * @note The parameter reduces the library by the code required for thread's
+ *     stack memory deallocation (stack unwinding), therefore must not be used
+ *     for dynamically created threads.
+ *
+ * @note For use for resource-constrained platforms only, where the standard
+ *     configuration may be problematic.
+ */
+//#define CONFIG_NOEXIT_STATIC_THREADS
+
+/**
  * Uncomment to log debugging messages.
  *
  * @note Usage of this option usually requires substantial increasing of the

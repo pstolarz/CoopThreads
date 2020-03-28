@@ -16,6 +16,10 @@
 #include <string.h> /* memset() */
 #include "coop_threads.h"
 
+#ifdef CONFIG_NOEXIT_STATIC_THREADS
+# include <assert.h>
+#endif
+
 #if defined(CONFIG_OPT_IDLE_WAIT) && \
     !(defined(CONFIG_OPT_IDLE) && defined(CONFIG_OPT_WAIT))
 # error "CONFIG_OPT_IDLE_WAIT requires CONFIG_OPT_IDLE and CONFIG_OPT_WAIT"
@@ -27,8 +31,10 @@
 typedef enum
 {
     EMPTY = 0,  /** Empty context slot on the pool. Id must be 0. */
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
     HOLE,       /** Thread terminated but its stack still occupies the main
                     stack, where threads stacks are allocated. */
+#endif
     NEW,        /** Already created thread, not yet started. */
     RUN,        /** Running thread. */
 #ifdef CONFIG_OPT_IDLE
@@ -99,18 +105,18 @@ typedef struct
         unsigned char res:   5; /** Reserved. */
     } wait_flgs;
 #endif
-
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
     /**
      * Thread stack depth on the main stack. 1 for the first started (deepest)
      * thread. @c coop_sched_ctx_t::depth for latest (most shallow) thread.
      */
     unsigned depth;
 
-    /** Thread execution context. */
-    jmp_buf exe_ctx;
-
     /** Thread entry execution context (used for stack unwinding). */
     jmp_buf entry_ctx;
+#endif
+    /** Thread execution context. */
+    jmp_buf exe_ctx;
 } coop_thrd_ctx_t;
 
 /**
@@ -124,19 +130,19 @@ typedef struct
     /** Number of occupied (non empty) thread slots. */
     unsigned busy_n;
 
-    /** Number of holes (terminated threads occupying the main stack). */
-    unsigned hole_n;
-
 #ifdef CONFIG_OPT_IDLE
     /** Number of idle and idle-wait threads. */
     unsigned idle_n;
 #endif
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
+    /** Number of holes (terminated threads occupying the main stack). */
+    unsigned hole_n;
 
     /**
      * Number of threads currently occupying the main stack.
      */
     unsigned depth;
-
+#endif
     /** Scheduler execution context. */
     jmp_buf exe_ctx;
 
@@ -146,6 +152,11 @@ typedef struct
 
 static coop_sched_ctx_t sched = {};
 
+#ifdef CONFIG_NOEXIT_STATIC_THREADS
+# define _ACTIVE_THREADS() (sched.busy_n)
+#else
+# define _ACTIVE_THREADS() (sched.busy_n - sched.hole_n)
+#endif
 
 #ifdef COOP_DEBUG
 static const char *_state_name(unsigned i)
@@ -154,8 +165,10 @@ static const char *_state_name(unsigned i)
     {
     case EMPTY:
         return "EMPTY";
+# ifndef CONFIG_NOEXIT_STATIC_THREADS
     case HOLE:
         return "HOLE";
+# endif
     case NEW:
         return "NEW";
     case RUN:
@@ -189,6 +202,7 @@ static inline void _sched_init(bool force)
  * are defined as inline with all their local variables stored in registers.
  */
 
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
 /**
  * Mark threads whose stacks need to be unwinded.
  *
@@ -244,6 +258,7 @@ static inline unsigned _mark_unwind_thrds()
 
     return unwnd_thrd;
 }
+#endif
 
 #ifdef CONFIG_OPT_IDLE
 /**
@@ -255,7 +270,7 @@ static inline void _system_idle(void)
     register coop_tick_t min_idle = 0, cur_tick = 0;
 
     /* system is considered idle-ready if all active threads are idle or idle-wait */
-    while (sched.idle_n > 0 && (sched.busy_n - sched.hole_n) <= sched.idle_n)
+    while (sched.idle_n > 0 && _ACTIVE_THREADS() <= sched.idle_n)
     {
         if (i) {
 # ifdef COOP_DEBUG
@@ -330,7 +345,9 @@ void coop_sched_service(void)
         switch (sched.thrds[sched.cur_thrd].state)
         {
         case EMPTY:
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
         case HOLE:
+#endif
         default:
             break;
 
@@ -398,6 +415,23 @@ run:
             break;
 
         case NEW:
+#ifdef CONFIG_NOEXIT_STATIC_THREADS
+            coop_dbg_log_cb("New thread #%d\n", sched.cur_thrd);
+
+# ifdef CONFIG_OPT_YIELD_AFTER
+            sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
+# endif
+            /* enter the thread routine */
+            sched.thrds[sched.cur_thrd].proc(sched.thrds[sched.cur_thrd].arg);
+
+            /* thread configured with CONFIG_NOEXIT_STATIC_THREADS
+               is not expected to finish */
+            coop_dbg_log_cb("UNEXPECTED: Thread #%d: RUN -> EMPTY\n",
+                sched.cur_thrd);
+            sched.thrds[sched.cur_thrd].state = EMPTY;
+            sched.busy_n--;
+            break;
+#else
             /* sched_pos_entry_thrd: save a new thread entry stack state */
             if (!setjmp(sched.thrds[sched.cur_thrd].entry_ctx))
             {
@@ -407,10 +441,10 @@ run:
                 sched.depth++;
                 sched.thrds[sched.cur_thrd].depth = sched.depth;
 
-                /* enter the thread routine */
-#ifdef CONFIG_OPT_YIELD_AFTER
+# ifdef CONFIG_OPT_YIELD_AFTER
                 sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
-#endif
+# endif
+                /* enter the thread routine */
                 sched.thrds[sched.cur_thrd].proc(sched.thrds[sched.cur_thrd].arg);
 
                 /*
@@ -457,10 +491,20 @@ run:
                 coop_dbg_log_cb("Back to scheduler; stack unwinded\n");
             }
             break;
+#endif /* CONFIG_NOEXIT_STATIC_THREADS */
         }
     }
 
+#ifdef CONFIG_NOEXIT_STATIC_THREADS
+    /*
+     * Can't exit the routine since stack has not been unwinded up to
+     * its entry point. Assertion will raise the exception in this case.
+     */
+    coop_dbg_log_cb("UNEXPECTED: coop_sched_service() exits!\n");
+    assert(false);
+#else
     _sched_init(true);
+#endif
 }
 
 coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
@@ -484,9 +528,11 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
                 (!stack_sz ? CONFIG_DEFAULT_STACK_SIZE : stack_sz);
             sched.thrds[i].arg = arg;
             sched.thrds[i].state = NEW;
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
             sched.thrds[i].depth = 0;
-            memset(sched.thrds[i].exe_ctx, 0, sizeof(sched.thrds[i].exe_ctx));
             memset(sched.thrds[i].entry_ctx, 0, sizeof(sched.thrds[i].entry_ctx));
+#endif
+            memset(sched.thrds[i].exe_ctx, 0, sizeof(sched.thrds[i].exe_ctx));
 
             sched.busy_n++;
             coop_dbg_log_cb("Thread #%d scheduled to run\n", i);
@@ -669,6 +715,10 @@ bool coop_idle_wait(int sem_id, coop_tick_t timeout)
 #ifdef __TEST__
 bool coop_test_is_shallow()
 {
+# ifdef CONFIG_NOEXIT_STATIC_THREADS
+    return false;
+# else
     return (sched.depth == sched.thrds[sched.cur_thrd].depth);
+# endif
 }
 #endif
