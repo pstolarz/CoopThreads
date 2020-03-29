@@ -18,7 +18,14 @@
  */
 #include "coop_threads.h"
 
-#define THREAD_STACK_SIZE 0x50
+#ifdef ARDUINO_ARCH_ESP32
+# define THREAD_STACK_SIZE 0x200
+#elif ARDUINO_ARCH_AVR
+# define THREAD_STACK_SIZE 0x50
+#else
+/* use default */
+# define THREAD_STACK_SIZE 0
+#endif
 
 /*
  * Thread routine
@@ -40,7 +47,7 @@ extern "C" void thrd_proc(void *arg)
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     coop_sched_thread(thrd_proc, "thrd_1", THREAD_STACK_SIZE, (void*)1);
     coop_sched_thread(thrd_proc, "thrd_2", THREAD_STACK_SIZE, (void*)2);

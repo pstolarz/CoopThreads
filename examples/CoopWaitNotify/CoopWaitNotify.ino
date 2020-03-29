@@ -20,7 +20,14 @@
  */
 #include "coop_threads.h"
 
-#define THREAD_STACK_SIZE 0x50
+#ifdef ARDUINO_ARCH_ESP32
+# define THREAD_STACK_SIZE 0x200
+#elif ARDUINO_ARCH_AVR
+# define THREAD_STACK_SIZE 0x50
+#else
+/* use default */
+# define THREAD_STACK_SIZE 0
+#endif
 
 static int cnt = 0;
 
@@ -80,7 +87,7 @@ extern "C" void thrd_even(void *arg)
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     coop_sched_thread(thrd_odd, "thrd_odd", THREAD_STACK_SIZE, NULL);
     coop_sched_thread(thrd_even, "thrd_even", THREAD_STACK_SIZE, NULL);
