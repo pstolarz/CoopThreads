@@ -24,7 +24,7 @@ extern "C" {
 typedef enum
 {
     COOP_SUCCESS = 0,   /** No error. */
-    COOP_INV_ARG,       /** Invalid argument error */
+    COOP_ERR_INV_ARG,   /** Invalid argument error */
     COOP_ERR_LIMIT      /** Max. limit reached error */
 } coop_error_t;
 
@@ -75,7 +75,7 @@ void coop_sched_service(void);
  *     @c CONFIG_DEFAULT_STACK_SIZE is used.
  * @param arg User argument passed untouched to the thread routine.
  *
- * @return COOP_INV_ARG Invalid argument.
+ * @return COOP_ERR_INV_ARG Invalid argument.
  * @return COOP_ERR_LIMIT Maximum number of threads reached.
  */
 coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
@@ -168,7 +168,7 @@ void coop_yield(void);
     defined(CONFIG_OPT_YIELD_AFTER) || \
     defined(CONFIG_OPT_WAIT)
 /**
- * Get clock tick for the routine call time callback.
+ * Get clock tick for at routine call time callback.
  */
 coop_tick_t coop_tick_cb();
 #endif

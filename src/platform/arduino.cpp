@@ -36,14 +36,14 @@ void coop_dbg_log_cb(const char *format, ...)
     Serial.print(msg);
 }
 
-#ifdef ARDUINO_ARCH_AVR
+# ifdef ARDUINO_ARCH_AVR
 /**
  * Supplementary debug routine: get stack pointer (AVR only).
  */
 uint16_t coop_avr_get_sp(void) {
     return (((uint16_t)SPH << 8) | (uint16_t)SPL);
 }
-#endif
+# endif
 #endif
 
 #ifndef CONFIG_TICK_CB_ALT

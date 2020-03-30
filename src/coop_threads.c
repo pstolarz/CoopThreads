@@ -511,7 +511,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
     size_t stack_sz, void *arg)
 {
     if (!proc) {
-        return COOP_INV_ARG;
+        return COOP_ERR_INV_ARG;
     } else
     if (sched.busy_n >= CONFIG_MAX_THREADS) {
         return COOP_ERR_LIMIT;
