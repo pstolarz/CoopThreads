@@ -329,6 +329,19 @@ void coop_sched_service(void)
 {
     while (sched.busy_n > 0)
     {
+#ifdef CONFIG_OPT_IDLE
+        /*
+         * The routine is called if currently handled thread passed through
+         * NEW or RUN states, therefore circumstances which could switch the
+         * thread to idle or idle-wait states may occur and checking conditions
+         * for suspending the platform should be performed. In other cases
+         * (EMPTY, HOLE and IDLE/WAIT states with the idle/idle-waiting state
+         * still pending) the control passes through 'next_iter' label. This
+         * eliminates unnecessary checks in _system_idle() and increases
+         * performance of the scheduler service.
+         */
+        _system_idle();
+#endif
         /*
          * coop_sched_service() routine is called recursively during building
          * stack frames for newly created threads. Each time the recursion
@@ -336,11 +349,8 @@ void coop_sched_service(void)
          * process. For this reason the incrementation takes place at the loop
          * entry stage.
          */
+next_iter:
         sched.cur_thrd = (sched.cur_thrd + 1) % CONFIG_MAX_THREADS;
-
-#ifdef CONFIG_OPT_IDLE
-        _system_idle();
-#endif
 
         switch (sched.thrds[sched.cur_thrd].state)
         {
@@ -349,7 +359,7 @@ void coop_sched_service(void)
         case HOLE:
 #endif
         default:
-            break;
+            goto next_iter;
 
 #ifdef CONFIG_OPT_IDLE
         case IDLE:
@@ -358,7 +368,7 @@ void coop_sched_service(void)
             {
                 /* the current thread is idle but other threads are running;
                    system can't switch to the idle state in this case */
-                break;
+                goto next_iter;
             }
 
             /* idle time passed; continue as in RUN state  */
@@ -376,7 +386,7 @@ void coop_sched_service(void)
                     coop_tick_cb(), sched.thrds[sched.cur_thrd].wait_to))
             {
                 /* not-notified infinite or not yet timed-out waiting thread */
-                break;
+                goto next_iter;
             }
 
             coop_dbg_log_cb(
@@ -401,10 +411,10 @@ run:
                 coop_dbg_log_cb("setjmp sched_pos_run; run thread #%d: "
                     "longjmp thrd_pos_[new/run]\n", sched.cur_thrd);
 
-                /* jump to running thread: thrd_pos_new, thrd_pos_run */
 #ifdef CONFIG_OPT_YIELD_AFTER
                 sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
 #endif
+                /* jump to running thread: thrd_pos_new, thrd_pos_run */
                 longjmp(sched.thrds[sched.cur_thrd].exe_ctx, 1);
             } else {
                 /* return from yielded running thread or restore
