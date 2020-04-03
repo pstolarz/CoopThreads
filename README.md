@@ -76,9 +76,9 @@ NOTE: The example assumes the stack grows downwards (into lower memory addresses
    doesn't interfere with working thread stacks.
 
 2. Fig. 2. Thread 2 terminates. Since its stack is not located as the last on
-   the stacks chain, the already terminated thread 2 stack constitutes a
-   *stack-hole*. That is it still occupies the main stack space event its thread
-   is already terminated.
+   the stacks chain, the already terminated thread 2 stack starts a *stack-hole*.
+   That is it still occupies the main stack space even its thread is already
+   terminated.
 
 3. Fig. 3. Thread 3 terminates. Since there is no working thread stacks between
    the thread 3 stack and the thread 1 stack (now the last stack on the chain)
