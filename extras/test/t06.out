@@ -1,6 +1,6 @@
+thrd_grp2_1: time-out; 100 ticks passed
 thrd_grp1_1: time-out; 100 ticks passed
 thrd_grp1_1 EXIT
-thrd_grp2_1: time-out; 100 ticks passed
 thrd_grp2_1 EXIT
 thrd_grp1_2: waited 150 ticks for singal
 thrd_grp1_2 EXIT

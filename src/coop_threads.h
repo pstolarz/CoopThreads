@@ -183,7 +183,7 @@ coop_tick_t coop_tick_cb();
  *
  * @param period Number of clock ticks the idle state shall last.
  *     The parameter may be 0 to indicate infinitive idle time, which may
- *     happen for infinitive idle waits. @see coop_idle_wait().
+ *     happen for infinitive waits. @see coop_wait().
  */
 void coop_idle_cb(coop_tick_t period);
 #endif
@@ -201,6 +201,15 @@ void coop_idle_cb(coop_tick_t period);
  *
  * @note To be called from thread routine only.
  *
+ * @note @c coop_wait() routine may switch the system to the idle state (via
+ *     @ref coop_idle_cb() callback if @c CONFIG_OPT_IDLE is configured). It
+ *     enables waiting-for-a-hardware events support. For example incoming
+ *     network packet may wake-up the hardware from an idle sleep-mode and its
+ *     ISR will notify thread(s) about the new packet arrival. Since the timeout
+ *     may be infinite (@c timeout set to 0) the system may be switched to the
+ *     indefinitely long idle time. This should be taken into account while
+ *     using the routine.
+ *
  * @see coop_notify()
  * @see coop_notify_all()
  */
@@ -214,6 +223,8 @@ bool coop_wait(int sem_id, coop_tick_t timeout);
  * @note While calling from ISR debug logs must be disabled or handled in
  *     a special way (see @ref CONFIG_DBG_LOG_CB_ALT) to avoid interrupt
  *     service related issues.
+ *
+ * @see coop_wait()
  */
 void coop_notify(int sem_id);
 
@@ -221,27 +232,13 @@ void coop_notify(int sem_id);
  * Send notification signal for all threads waiting on @c sem_id.
  *
  * @see coop_notify() for additional notes.
+ * @see coop_wait()
  */
 void coop_notify_all(int sem_id);
 #endif /* CONFIG_OPT_WAIT */
 
-#ifdef CONFIG_OPT_IDLE_WAIT
 /**
- * Similar to @ref coop_wait(), except the wait may switch the system to the
- * idle state (via @ref coop_idle_cb() callback).
- *
- * The feature is intended to enable waiting-for-a-hardware events support.
- * For example incoming network packet may wake-up the hardware from an idle
- * sleep-mode and its ISR will notify thread(s) about the new packet arrival.
- *
- * @note The feature requires @ref CONFIG_OPT_IDLE and @ref CONFIG_OPT_WAIT.
- *
- * @note Since the timeout may be infinite (@c timeout set to 0) the system
- *     may be switched to the indefinitely long idle time. This should be taken
- *     into consideration while using the routine.
  */
-bool coop_idle_wait(int sem_id, coop_tick_t timeout);
-#endif
 
 #ifdef COOP_DEBUG
 /**

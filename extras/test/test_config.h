@@ -23,7 +23,6 @@
 #ifdef T07
 # define CONFIG_OPT_WAIT
 # define CONFIG_OPT_IDLE
-# define CONFIG_OPT_IDLE_WAIT
 # define CONFIG_IDLE_CB_ALT
 #endif
 

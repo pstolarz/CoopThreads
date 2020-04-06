@@ -45,11 +45,6 @@
 #define CONFIG_OPT_WAIT
 
 /**
- * Enable feature: @ref coop_idle_wait() support.
- */
-//#define CONFIG_OPT_IDLE_WAIT
-
-/**
  * If the library is used to create static number of threads at its startup
  * and the threads are not intended to exit, this parameter may be configured
  * to reduce the library footprint and memory usage.
