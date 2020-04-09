@@ -26,9 +26,7 @@ static void thrd_1(void *arg)
         printf("%s: %d\n", coop_thread_name(), i+1);
         usleep(5000);
 
-        if (coop_yield_after(after)) {
-            after = coop_tick_cb() + MAX_RUN_TIME;
-        }
+        coop_yield_after(&after, MAX_RUN_TIME);
     }
     printf("%s EXIT\n", coop_thread_name());
 }

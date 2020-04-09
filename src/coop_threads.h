@@ -25,7 +25,8 @@ typedef enum
 {
     COOP_SUCCESS = 0,   /** No error. */
     COOP_ERR_INV_ARG,   /** Invalid argument error */
-    COOP_ERR_LIMIT      /** Max. limit reached error */
+    COOP_ERR_LIMIT,     /** Max. limit reached error */
+    COOP_ERR_TIMEOUT    /** Timeout occured */
 } coop_error_t;
 
 typedef void (*coop_thrd_proc_t)(void*);
@@ -75,6 +76,7 @@ void coop_sched_service(void);
  *     @c CONFIG_DEFAULT_STACK_SIZE is used.
  * @param arg User argument passed untouched to the thread routine.
  *
+ * @return COOP_SUCCESS Function finishes with success.
  * @return COOP_ERR_INV_ARG Invalid argument.
  * @return COOP_ERR_LIMIT Maximum number of threads reached.
  */
@@ -92,7 +94,7 @@ const char *coop_thread_name(void);
 #ifdef CONFIG_OPT_IDLE
 /**
  * Declare the currently running thread shall be idle for specific @c period
- * of ticks. The @period argument must be not greater than @ref COOP_MAX_PERIOD.
+ * of ticks. The @period argument must not be greater than @ref COOP_MAX_PERIOD.
  *
  * @note To be called from thread routine only.
  *
@@ -114,10 +116,14 @@ void coop_idle(coop_tick_t period);
 #ifdef CONFIG_OPT_YIELD_AFTER
 /**
  * Similar to @ref coop_yield() but the yield happens only if current clock
- * tick occurs after the tick passed by @c after argument.
+ * tick occurs after the tick passed by @c *after argument.
  *
- * @return @c true - the thread was yielded to the scheduler and returned back,
- *     @c false otherwise.
+ * @param after In/out argument. Points to clock tick after which yielding to
+ *     the scheduler shall occur. After returning back to the yielded thread
+ *     @c after is incremented by @c period value. The argument is not updated
+ *     if the execution switch doesn't occur.
+ * @param period Period of time in clock ticks to increment @c after value.
+ *     The argument must not be greater than @ref COOP_MAX_PERIOD.
  *
  * @note To be called from thread routine only.
  *
@@ -137,13 +143,12 @@ void coop_idle(coop_tick_t period);
  *         // Yield the thread if the time passed. The loop will be continued
  *         // after the scheduler will schedule the thread to run in the next
  *         // scheduling round.
- *         if (coop_yield_after(after))
- *             after = coop_tick_cb() + MAX_RUN_TIME;
+ *         coop_yield_after(&after, MAX_RUN_TIME);
  *     }
  * }
  * @endcode
  */
-bool coop_yield_after(coop_tick_t after);
+void coop_yield_after(coop_tick_t *after, coop_tick_t period);
 #endif
 
 #ifdef CONFIG_OPT_IDLE
@@ -182,8 +187,8 @@ coop_tick_t coop_tick_cb();
  * by switch the system to a desired sleep mode.
  *
  * @param period Number of clock ticks the idle state shall last.
- *     The parameter may be 0 to indicate infinitive idle time, which may
- *     happen for infinitive waits. @see coop_wait().
+ *     The argument may be 0 to indicate infinitive idle time, which may happen
+ *     for infinitive waits. @see coop_wait().
  */
 void coop_idle_cb(coop_tick_t period);
 #endif
@@ -197,7 +202,8 @@ void coop_idle_cb(coop_tick_t period);
  * @param timeout A timeout value the thread will wait for a notification
  *     before timeout will be reported. Pass 0 for infinite wait.
  *
- * @return @c true - notification signal received, @c false - timeout.
+ * @return COOP_SUCCESS Notification signal received
+ * @return COOP_ERR_TIMEOUT Timeout reached.
  *
  * @note To be called from thread routine only.
  *
@@ -213,7 +219,7 @@ void coop_idle_cb(coop_tick_t period);
  * @see coop_notify()
  * @see coop_notify_all()
  */
-bool coop_wait(int sem_id, coop_tick_t timeout);
+coop_error_t coop_wait(int sem_id, coop_tick_t timeout);
 
 /**
  * Send notification signal for a single thread waiting on @c sem_id.

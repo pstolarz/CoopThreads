@@ -22,7 +22,7 @@ static void thrd_grp1(void *arg)
     coop_yield();
 
     start =  coop_tick_cb();
-    if (coop_wait(1, timeout)) {
+    if (coop_wait(1, timeout) == COOP_SUCCESS) {
         printf("%s: waited %lu ticks for singal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {
@@ -37,7 +37,7 @@ static void thrd_grp2(void *arg)
     coop_tick_t timeout = (coop_tick_t)(size_t)arg;
     coop_tick_t start =  coop_tick_cb();
 
-    if (coop_wait(2, timeout)) {
+    if (coop_wait(2, timeout) == COOP_SUCCESS) {
         printf("%s: waited %lu ticks for singal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {

@@ -43,9 +43,7 @@ extern "C" void thrd_proc(void *arg)
         Serial.print(msg);
 
         delay(100);
-        if (coop_yield_after(after)) {
-            after = coop_tick_cb() + 100*prio;
-        }
+        coop_yield_after(&after, 100*prio);
     }
     sprintf(msg, "%s EXIT\n", coop_thread_name());
     Serial.print(msg);

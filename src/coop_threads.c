@@ -618,22 +618,21 @@ void coop_yield(void)
 #endif
 
 #ifdef CONFIG_OPT_YIELD_AFTER
-bool coop_yield_after(coop_tick_t after)
+void coop_yield_after(coop_tick_t *after, coop_tick_t period)
 {
-    if (COOP_IS_TICK_OVER(coop_tick_cb(), after))
+    if (COOP_IS_TICK_OVER(coop_tick_cb(), *after))
     {
         coop_dbg_log_cb("Thread #%d yields after %lu tick\n",
-            sched.cur_thrd, (unsigned long)after);
+            sched.cur_thrd, (unsigned long)*after);
 
         _yield(RUN);
-        return true;
+        *after = coop_tick_cb() + period;
     }
-    return false;
 }
 #endif
 
 #ifdef CONFIG_OPT_WAIT
-bool coop_wait(int sem_id, coop_tick_t timeout)
+coop_error_t coop_wait(int sem_id, coop_tick_t timeout)
 {
     sched.thrds[sched.cur_thrd].sem_id = sem_id;
     sched.thrds[sched.cur_thrd].wait_flgs.notif = 0;
@@ -659,11 +658,11 @@ bool coop_wait(int sem_id, coop_tick_t timeout)
     if (sched.thrds[sched.cur_thrd].wait_flgs.notif != 0) {
         coop_dbg_log_cb("Thread #%d notified on sem_id: %d\n",
             sched.cur_thrd, sem_id);
-        return true;
+        return COOP_SUCCESS;
     } else {
         coop_dbg_log_cb("Thread #%d wait-timeout; sem_id: %d\n",
             sched.cur_thrd, sem_id);
-        return false;
+        return COOP_ERR_TIMEOUT;
     }
 }
 
