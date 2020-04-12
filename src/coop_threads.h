@@ -29,7 +29,26 @@ typedef enum
     COOP_ERR_TIMEOUT    /** Timeout occured */
 } coop_error_t;
 
-typedef void (*coop_thrd_proc_t)(void*);
+/**
+ * Thread routine type.
+ *
+ * @param arg User argument passed untouched to the thread routine.
+ */
+typedef void (*coop_thrd_proc_t)(void *arg);
+
+#ifdef CONFIG_OPT_WAIT
+/**
+ * Waiting-predicate routine type.
+ *
+ * @param cv User argument (aka @a conditional-variable) passed untouched to
+ *     the routine.
+ *
+ * @return true Waiting-for-criteria are met and waiting thread(s) shall
+ *     be notified (switched back from waiting to running state).
+ * @return false Otherwise.
+ */
+typedef bool (*coop_predic_proc_t)(void *cv);
+#endif
 
 /**
  * Clock tick type (must be some sort of unsigned integer).
@@ -219,7 +238,23 @@ void coop_idle_cb(coop_tick_t period);
  * @see coop_notify()
  * @see coop_notify_all()
  */
-coop_error_t coop_wait(int sem_id, coop_tick_t timeout);
+#define coop_wait(sem_id, timeout) coop_wait_cond(sem_id, timeout, NULL, NULL)
+
+/**
+ * Conditional wait.
+ *
+ * @param sem_id Semapthore id.
+ * @param timeout Waiting timeout.
+ * @param predic Waiting-predicate routine. If @c NULL no predicate is provided
+ *     and @c coop_wait_cond() is equivalent to coop_wait().
+ * @param cv User argument passed untouched to the predicate routine.
+ *     The argument is ignored if @c predic is @c NULL.
+ *
+ * @see coop_wait() for more details.
+ * @see coop_predic_proc_t for more information about the predicate routine.
+ */
+coop_error_t coop_wait_cond(
+    int sem_id, coop_tick_t timeout, coop_predic_proc_t predic, void *cv);
 
 /**
  * Send notification signal for a single thread waiting on @c sem_id.
@@ -238,7 +273,6 @@ void coop_notify(int sem_id);
  * Send notification signal for all threads waiting on @c sem_id.
  *
  * @see coop_notify() for additional notes.
- * @see coop_wait()
  */
 void coop_notify_all(int sem_id);
 #endif /* CONFIG_OPT_WAIT */

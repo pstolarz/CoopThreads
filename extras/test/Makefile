@@ -15,7 +15,8 @@ TESTS=\
     t04_yield_after \
     t05_wait_notify_sngl \
     t06_wait_notify_all \
-    t07_idle_wait
+    t07_idle_wait \
+    t08_wait_cond
 
 STRESS_TESTS=\
     st01_enter_exit
@@ -27,6 +28,7 @@ t04_yield_after: TDEFS=-DT04
 t05_wait_notify_sngl: TDEFS+=-DT05
 t06_wait_notify_all: TDEFS+=-DT06
 t07_idle_wait: TDEFS+=-DT07
+t08_wait_cond: TDEFS+=-DT08
 
 st01_enter_exit: TDEFS+=-DST01
 

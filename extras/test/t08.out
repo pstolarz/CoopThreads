@@ -1,0 +1,9 @@
+thrd_1: waited 200 ticks for singal
+thrd_1 EXIT
+thrd_2: waited 400 ticks for singal
+thrd_2 EXIT
+thrd_notify EXIT
+thrd_3: waited 600 ticks for singal
+thrd_3 EXIT
+thrd_4: time-out; 810 ticks passed
+thrd_4 EXIT

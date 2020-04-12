@@ -88,6 +88,12 @@ typedef struct
     /** Semaphore id. */
     int sem_id;
 
+    /** Waiting-predicate routine */
+    coop_predic_proc_t predic;
+
+    /** User defined conditional-variable */
+    void *cv;
+
     /** Clock tick the thread is waiting up to. */
     coop_tick_t wait_to;
 
@@ -632,9 +638,12 @@ void coop_yield_after(coop_tick_t *after, coop_tick_t period)
 #endif
 
 #ifdef CONFIG_OPT_WAIT
-coop_error_t coop_wait(int sem_id, coop_tick_t timeout)
+coop_error_t coop_wait_cond(
+    int sem_id, coop_tick_t timeout, coop_predic_proc_t predic, void *cv)
 {
     sched.thrds[sched.cur_thrd].sem_id = sem_id;
+    sched.thrds[sched.cur_thrd].predic = predic;
+    sched.thrds[sched.cur_thrd].cv = cv;
     sched.thrds[sched.cur_thrd].wait_flgs.notif = 0;
     if (timeout) {
         sched.thrds[sched.cur_thrd].wait_to = coop_tick_cb() + timeout;
@@ -669,7 +678,9 @@ coop_error_t coop_wait(int sem_id, coop_tick_t timeout)
 static inline void _notify(int sem_id, bool single)
 {
     for (unsigned i = 0; i < CONFIG_MAX_THREADS; i++) {
-        if (_IS_WAIT(sched.thrds[i].state) && sched.thrds[i].sem_id == sem_id)
+        if (_IS_WAIT(sched.thrds[i].state) &&
+            sched.thrds[i].sem_id == sem_id &&
+            (!sched.thrds[i].predic || sched.thrds[i].predic(sched.thrds[i].cv)))
         {
             coop_dbg_log_cb("Thread #%d WAIT -> RUN (%s-notify on sem_id: %d)\n",
                 i, (single ? "single" : "all"), sem_id);

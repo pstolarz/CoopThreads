@@ -15,7 +15,7 @@
 # define CONFIG_OPT_WAIT
 #endif
 
-#ifdef T06
+#if defined(T06) || defined(T08)
 # define CONFIG_OPT_WAIT
 # define CONFIG_OPT_IDLE
 #endif
