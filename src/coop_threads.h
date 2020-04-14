@@ -246,12 +246,17 @@ void coop_idle_cb(coop_tick_t period);
  * @param sem_id Semapthore id.
  * @param timeout Waiting timeout.
  * @param predic Waiting-predicate routine. If @c NULL no predicate is provided
- *     and @c coop_wait_cond() is equivalent to coop_wait().
+ *     and @c coop_wait_cond() is equivalent to @c coop_wait() - works as
+ *     a binary semaphore. @see coop_predic_proc_t for more information about
+ *     the predicate routine.
  * @param cv User argument passed untouched to the predicate routine.
  *     The argument is ignored if @c predic is @c NULL.
  *
- * @see coop_wait() for more details.
- * @see coop_predic_proc_t for more information about the predicate routine.
+ * @return COOP_SUCCESS Notification signal received
+ * @return COOP_ERR_TIMEOUT Timeout reached.
+ *
+ * @note To be called from thread routine only.
+ * @see coop_wait() for additional notes.
  */
 coop_error_t coop_wait_cond(
     int sem_id, coop_tick_t timeout, coop_predic_proc_t predic, void *cv);
@@ -276,9 +281,6 @@ void coop_notify(int sem_id);
  */
 void coop_notify_all(int sem_id);
 #endif /* CONFIG_OPT_WAIT */
-
-/**
- */
 
 #ifdef COOP_DEBUG
 /**
