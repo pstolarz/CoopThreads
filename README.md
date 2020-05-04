@@ -43,7 +43,7 @@ documentation in C headers.
 Each thread running under control of the library works on its own stack. The
 stack size may be set for each thread separately during thread creation. It's
 important to note the thread stacks are created on the main stack the library
-code in running on, therefore it is **critical to assure proper main stack size
+code is running on, therefore it is **critical to assure proper main stack size
 while using the library.**
 
 The library controls thread stack creation and removal as explained on the
@@ -92,9 +92,9 @@ thread routine during its run-time, but also must foresee some additional stack
 space required by preemptive ISRs activities. For this reason exact minimal
 thread stack size for a given thread routine is fluent and may substantially
 differ for various platforms and development environments. If low memory RAM
-usage is critical it's usually feasible to start with trial and error method.
-Try with some minimal thread stack size value and increase its size in case of
-platform instability/crashes.
+usage is critical it's usually feasible to start with the trial and error
+method - try with some minimal thread stack size value and increase its size
+in case of platform instability/crashes.
 
 ## Platform Callbacks
 
