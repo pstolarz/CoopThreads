@@ -32,11 +32,14 @@ The library has been tested on the following platforms:
   easily ported for other development platforms. See [Platform Callbacks](#platform-callbacks)
   section for more details.
 
-## Quick Start
+## Usage
 
 Refer to [`examples`](examples) directory for examples presenting usage of the
 various library features. Thorough API specification is contained as inline
 documentation in C headers.
+
+File [`src/coop_config.h`](src/coop_config.h) contains parameters
+configuring the library functionality. See the file for more details.
 
 ## Thread Stack
 
@@ -134,4 +137,4 @@ the system idle state, a library user may require to:
 
 ## License
 
-2 clause BSD license. See LICENSE file for details.
+2 clause BSD license. See [`LICENSE`](LICENSE) file for details.
