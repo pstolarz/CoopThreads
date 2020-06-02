@@ -11,6 +11,8 @@ The library has been tested on the following platforms:
     * Tested on Arduino UNO (ATmega328P).
 * Arduino ESP32.
     * Tested on ESP32-DevKitC (ESP32-WROOM-32)
+* Arduino ESP8266.
+    * Tested on WeMos D1
 
 ## Features
 

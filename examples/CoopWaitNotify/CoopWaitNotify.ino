@@ -20,13 +20,23 @@
  */
 #include "coop_threads.h"
 
-#ifdef ARDUINO_ARCH_ESP32
-# define THREAD_STACK_SIZE 0x200
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+# define THREAD_STACK_SIZE 0x250
 #elif ARDUINO_ARCH_AVR
 # define THREAD_STACK_SIZE 0x50
 #else
 /* use default */
 # define THREAD_STACK_SIZE 0
+#endif
+
+#if CONFIG_MAX_THREADS < 2
+# error CONFIG_MAX_THREADS >= 2 is required
+#endif
+#ifndef CONFIG_OPT_IDLE
+# error CONFIG_OPT_IDLE need to be configured
+#endif
+#ifndef CONFIG_OPT_WAIT
+# error CONFIG_OPT_WAIT need to be configured
 #endif
 
 static int cnt = 0;

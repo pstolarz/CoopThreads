@@ -149,7 +149,7 @@ typedef struct
     coop_thrd_ctx_t thrds[CONFIG_MAX_THREADS];
 } coop_sched_ctx_t;
 
-static coop_sched_ctx_t sched = {};
+static coop_sched_ctx_t sched = {0};
 
 #ifdef CONFIG_NOEXIT_STATIC_THREADS
 # define _ACTIVE_THREADS() (sched.busy_n)
