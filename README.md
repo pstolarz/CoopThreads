@@ -27,8 +27,7 @@ The library has been tested on the following platforms:
 * Wait/notify support for effective threads synchronization.
 
 * Small and configurable footprint. Unused features may be turned off and reduce
-  footprint of a compiled image. See [`src/coop_config.h`](src/coop_config.h)
-  library configuration header for more details.
+  footprint of a compiled image.
 
 * Although the library was created for Arduino environment in mind, it may be
   easily ported for other development platforms. See [Platform Callbacks](#platform-callbacks)
