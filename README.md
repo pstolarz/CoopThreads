@@ -70,8 +70,6 @@ following example.
 +-------------------+  |        +-------------------+      +-------------------+
         Fig 1                           Fig 2                      Fig 3
 ```
-NOTE: The example assumes the stack grows downwards (into lower memory addresses).
-
 1. Fig. 1. Three threads are created - thread 1 (as first), 2, 3 (as last) by
    calling `coop_sched_thread()` routine. The threads are created on the main
    stack with their stack sizes specified during the thread creation by passing
