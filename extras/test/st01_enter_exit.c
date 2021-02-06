@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2021 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -39,8 +39,9 @@ static void thrd_proc(void *arg)
         } else {
             /*
              * Probability 0.4: schedule new thread to run. May fail with limit
-             * error in case of no space on the scheduler pool (e.g. terminating
-             * thread ends as holes still occupying the main stack and the pool).
+             * error in case no space is available on the threads pool (e.g.
+             * terminating threads end as holes still occupying the main stack
+             * and the pool).
              */
             coop_sched_thread(thrd_proc, NULL, 0, (void*)(size_t)(++thrd_cnt));
         }

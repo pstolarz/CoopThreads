@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2021 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -52,7 +52,7 @@ typedef enum
 # define _IS_WAIT(_state) (0)
 #endif
 
-/* started thread in an active thread with allocated stack (therefore not NEW) */
+/* NEW thread is not considered as started */
 #define _IS_STARTED(_state) \
     ((_state) == RUN || _IS_IDLE(_state) || _IS_WAIT(_state))
 
@@ -137,9 +137,7 @@ typedef struct
     /** Number of holes (terminated threads occupying the main stack). */
     unsigned hole_n;
 
-    /**
-     * Number of threads currently occupying the main stack.
-     */
+    /** Number of threads currently occupying the main stack. */
     unsigned depth;
 #endif
     /** Scheduler execution context. */
@@ -230,7 +228,7 @@ static inline unsigned _mark_unwind_thrds()
     {
         /*
          * All holes between the terminating thread and the most shallow
-         * started thread are marked as EMPTY to mark stack space occupied
+         * started thread are marked as EMPTY to indicate stack space occupied
          * by these threads stacks as to be freed.
          */
         for (i = 0; i < CONFIG_MAX_THREADS; i++) {
@@ -272,6 +270,7 @@ static inline void _system_idle(void)
     while (sched.idle_n > 0 && _ACTIVE_THREADS() <= sched.idle_n)
     {
         if (i) {
+            /* min_idle was set in the previous loop pass */
 # ifdef COOP_DEBUG
             if (min_idle == COOP_MAX_TICK) {
                 coop_dbg_log_cb("System going idle infinitely\n");
@@ -280,7 +279,7 @@ static inline void _system_idle(void)
                     (unsigned long)min_idle);
             }
 # endif
-            /* subsequent loop pass; system is idle up to nearest wake-up time */
+            /* system is idle up to nearest wake-up time */
             coop_idle_cb(min_idle == COOP_MAX_TICK ? 0 : min_idle);
         }
 
@@ -456,17 +455,19 @@ run:
                  * Scheduler stack is set at the thread stack frame, therefore
                  * need to be updated:
                  *
-                 * - If the terminating thread is below the current main stack
-                 *   depth, the thread constitutes a hole (a terminated thread
-                 *   with its stack still occupying the main stack space).
-                 *   Scheduler stack frame is restored to its previous position.
-                 *   No stack unwind occurs in this case.
+                 * - If the terminating thread stack depth is less than the
+                 *   number of threads stacks occupying the main stack, the
+                 *   thread constitutes a hole (a terminated thread with its
+                 *   stack still occupying the main stack space). In this case
+                 *   the scheduler stack frame is restored to its previous
+                 *   position. No stack unwind occurs.
                  *
-                 * - If the terminating thread stack depth is at the main stack
-                 *   depth level (most shallow thread), the stack unwind occurs.
-                 *   The scheduler stack frame is set to the position of an
-                 *   already terminated thread stack frame (may to be a hole)
-                 *   just above a started thread with most shallow stack frame.
+                 * - If the terminating thread stack depth is equal to the
+                 *   number of threads stacks occupying the main stack - the
+                 *   stack unwind occurs. In this case the scheduler stack
+                 *   frame is set to the position of an already terminated
+                 *   thread stack frame (possibly a hole) just above a started
+                 *   thread with most shallow stack.
                  */
                 if (sched.thrds[sched.cur_thrd].depth < sched.depth)
                 {
