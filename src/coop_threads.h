@@ -313,6 +313,7 @@ void coop_dbg_log_cb(const char *format, ...);
 
 #ifdef __TEST__
 bool coop_test_is_shallow(void);
+unsigned coop_test_get_cur_thrd();
 void coop_test_set_cur_thrd(unsigned cur_thrd);
 void *coop_test_get_stack(unsigned thrd);
 void coop_test_set_stack(unsigned thrd, void *stack);

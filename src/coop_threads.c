@@ -746,8 +746,12 @@ bool coop_test_is_shallow()
 # endif
 }
 
-void coop_test_set_cur_thrd(unsigned cur_thrd) {
-    sched.cur_thrd = cur_thrd;
+unsigned coop_test_get_cur_thrd() {
+    return sched.cur_thrd;
+}
+
+void coop_test_set_cur_thrd(unsigned thrd) {
+    sched.cur_thrd = thrd;
 }
 
 void *coop_test_get_stack(unsigned thrd) {
