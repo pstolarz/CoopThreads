@@ -13,12 +13,16 @@
 #include <alloca.h>
 #include <setjmp.h>
 #include <stdbool.h>
-#include <string.h> /* memset() */
+#include <string.h>     /* memset() */
+#include <sys/types.h>  /* ssize_t */
 #include "coop_threads.h"
 
 #ifdef CONFIG_NOEXIT_STATIC_THREADS
 # include <assert.h>
 #endif
+
+/** Stack padding byte: 0b10100101 */
+#define STACK_PADD  0xA5
 
 /**
  * Thread states.
@@ -67,7 +71,8 @@ typedef struct
     /** Thread name (may be NULL). */
     const char *name;
 
-    /** Thread stack size. */
+    /** Thread stack. */
+    void *stack;
     size_t stack_sz;
 
     /** User passed argument. */
@@ -567,7 +572,9 @@ static inline void _yield(coop_thrd_state_t new_state)
                 sched.cur_thrd, _state_name(sched.cur_thrd));
 
             /* allocate thread stack */
-            memset(alloca(sched.thrds[sched.cur_thrd].stack_sz), 0,
+            sched.thrds[sched.cur_thrd].stack =
+                alloca(sched.thrds[sched.cur_thrd].stack_sz);
+            memset(sched.thrds[sched.cur_thrd].stack, STACK_PADD,
                 sched.thrds[sched.cur_thrd].stack_sz);
 
             /* build new thread stack via recurrent scheduler service call */
@@ -707,6 +714,28 @@ void coop_notify_all(int sem_id)
 }
 #endif /* CONFIG_OPT_WAIT */
 
+#ifdef CONFIG_OPT_STACK_WM
+size_t coop_stack_wm()
+{
+    size_t stack_sz = sched.thrds[sched.cur_thrd].stack_sz;
+    unsigned char *stack = (unsigned char*)sched.thrds[sched.cur_thrd].stack;
+    size_t f, f2; /* free space space water-marks */
+
+    /* first check most common type of stack (growing into lower addresses) */
+    for (f = stack_sz; f && stack[f - 1] == STACK_PADD; f--);
+    f = stack_sz - f;
+
+    if (f < sizeof(void*)) {
+        /* whole stack was filled up or the stack grows into higher addresses */
+        for (f2 = 0; f2 < stack_sz && stack[f2] == STACK_PADD; f2++);
+
+        /* assume growing into higher addresses type of stack */
+        if (f2 > f) f = f2;
+    }
+    return (stack_sz - f);
+}
+#endif /* CONFIG_OPT_STACK_WM */
+
 #ifdef __TEST__
 bool coop_test_is_shallow()
 {
@@ -715,5 +744,17 @@ bool coop_test_is_shallow()
 # else
     return (sched.depth == sched.thrds[sched.cur_thrd].depth);
 # endif
+}
+
+void coop_test_set_cur_thrd(unsigned cur_thrd) {
+    sched.cur_thrd = cur_thrd;
+}
+
+void *coop_test_get_stack(unsigned thrd) {
+    return sched.thrds[thrd].stack;
+}
+
+void coop_test_set_stack(unsigned thrd, void *stack) {
+    sched.thrds[thrd].stack = stack;
 }
 #endif

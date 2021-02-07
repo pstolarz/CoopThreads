@@ -24,6 +24,7 @@ coop_wait	KEYWORD2
 coop_wait_cond	KEYWORD2
 coop_notify	KEYWORD2
 coop_notify_all	KEYWORD2
+coop_stack_wm	KEYWORD2
 
 coop_tick_cb	KEYWORD2
 coop_idle_cb	KEYWORD2

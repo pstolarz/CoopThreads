@@ -16,7 +16,8 @@ TESTS=\
     t05_wait_notify_sngl \
     t06_wait_notify_all \
     t07_idle_wait \
-    t08_wait_cond
+    t08_wait_cond \
+    t09_stack_wm
 
 STRESS_TESTS=\
     st01_enter_exit
@@ -29,6 +30,7 @@ t05_wait_notify_sngl: TDEFS+=-DT05
 t06_wait_notify_all: TDEFS+=-DT06
 t07_idle_wait: TDEFS+=-DT07
 t08_wait_cond: TDEFS+=-DT08
+t09_stack_wm: TDEFS+=-DT09
 
 st01_enter_exit: TDEFS+=-DST01
 

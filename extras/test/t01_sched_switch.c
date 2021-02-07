@@ -23,7 +23,8 @@ static void thrd_proc(void *arg)
         usleep(50000);
         coop_yield();
     }
-    printf("%s EXIT\n", coop_thread_name());
+    printf("%s EXIT; Max stack usage: 0x%x\n",
+        coop_thread_name(), (unsigned)coop_stack_wm());
 }
 
 int main(int argc, char *argv[])

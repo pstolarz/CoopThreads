@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2021 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -282,6 +282,21 @@ void coop_notify(int sem_id);
 void coop_notify_all(int sem_id);
 #endif /* CONFIG_OPT_WAIT */
 
+#ifdef CONFIG_OPT_STACK_WM
+/**
+ * Get maximum stack usage water-mark for the current thread.
+ *
+ * @return Max stack usage water-mark in bytes.
+ *
+ * @note The routine tries to detect type of the platform stack (growing into
+ *     lower or higher addresses). Note the algorithm may not to be always
+ *     perfectly accurate therefore the returned value shall be treated as an
+ *     indicator while experimenting with various stack sizes.
+ * @note To be called from thread routine only.
+ */
+size_t coop_stack_wm();
+#endif
+
 #ifdef COOP_DEBUG
 /**
  * Debug message log callback.
@@ -298,5 +313,8 @@ void coop_dbg_log_cb(const char *format, ...);
 
 #ifdef __TEST__
 bool coop_test_is_shallow(void);
+void coop_test_set_cur_thrd(unsigned cur_thrd);
+void *coop_test_get_stack(unsigned thrd);
+void coop_test_set_stack(unsigned thrd, void *stack);
 #endif
 #endif /* __COOP_THREADS_H__ */

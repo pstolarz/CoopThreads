@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2021 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -19,9 +19,9 @@
 #include "coop_threads.h"
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-# define THREAD_STACK_SIZE 0x250
+# define THREAD_STACK_SIZE 0x250U
 #elif ARDUINO_ARCH_AVR
-# define THREAD_STACK_SIZE 0x50
+# define THREAD_STACK_SIZE 0x50U
 #else
 /* use default */
 # define THREAD_STACK_SIZE 0

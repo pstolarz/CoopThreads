@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2021 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -21,7 +21,7 @@
 /**
  * Default thread stack size.
  */
-#define CONFIG_DEFAULT_STACK_SIZE 0x100
+#define CONFIG_DEFAULT_STACK_SIZE 0x100U
 
 /**
  * Maximum number of threads supported by the library.
@@ -43,6 +43,11 @@
  * Enable feature: @ref coop_wait(), @ref coop_notify() support.
  */
 #define CONFIG_OPT_WAIT
+
+/**
+ * Enable feature: @ref coop_stack_wm() support.
+ */
+//#define CONFIG_OPT_STACK_WM
 
 /**
  * If the library is used to create static number of threads at its startup

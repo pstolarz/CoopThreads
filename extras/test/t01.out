@@ -3,21 +3,21 @@ thrd_2: 1
 thrd_3: 1
 thrd_4: 1
 thrd_5: 1
-thrd_1 EXIT
+thrd_1 EXIT; Max stack usage: 0x0
 thrd_2: 2
 thrd_3: 2
 thrd_4: 2
 thrd_5: 2
-thrd_2 EXIT
+thrd_2 EXIT; Max stack usage: 0x648
 thrd_3: 3
 thrd_4: 3
 thrd_5: 3
-thrd_3 EXIT
+thrd_3 EXIT; Max stack usage: 0x648
 thrd_4: 4
 thrd_5: 4
-thrd_4 EXIT
+thrd_4 EXIT; Max stack usage: 0x648
 thrd_5: 5
-thrd_5 EXIT
+thrd_5 EXIT; Max stack usage: 0x648
 thrd_6: 1
 thrd_7: 1
 thrd_8: 1
@@ -32,16 +32,16 @@ thrd_6: 3
 thrd_7: 3
 thrd_8: 3
 thrd_9: 3
-thrd_10 EXIT
+thrd_10 EXIT; Max stack usage: 0x648
 thrd_6: 4
 thrd_7: 4
 thrd_8: 4
-thrd_9 EXIT
+thrd_9 EXIT; Max stack usage: 0x648
 thrd_6: 5
 thrd_7: 5
-thrd_8 EXIT
+thrd_8 EXIT; Max stack usage: 0x648
 thrd_6: 6
-thrd_7 EXIT
-thrd_6 EXIT
+thrd_7 EXIT; Max stack usage: 0x648
+thrd_6 EXIT; Max stack usage: 0x648
 thrd_11: 1
-thrd_11 EXIT
+thrd_11 EXIT; Max stack usage: 0x0

@@ -1,6 +1,10 @@
 /* common configuration */
-#define CONFIG_DEFAULT_STACK_SIZE 0x1000
+#define CONFIG_DEFAULT_STACK_SIZE 0x1000U
 #define CONFIG_MAX_THREADS 10
+
+#ifdef T01
+# define CONFIG_OPT_STACK_WM
+#endif
 
 #if defined(T02) || defined(T03)
 # define CONFIG_OPT_IDLE
@@ -24,6 +28,10 @@
 # define CONFIG_OPT_WAIT
 # define CONFIG_OPT_IDLE
 # define CONFIG_IDLE_CB_ALT
+#endif
+
+#ifdef T09
+# define CONFIG_OPT_STACK_WM
 #endif
 
 #ifdef ST01

@@ -96,7 +96,9 @@ thread stack size for a given thread routine is fluent and may substantially
 differ for various platforms and development environments. If low memory RAM
 usage is critical it's usually feasible to start with the trial and error
 method - try with some minimal thread stack size value and increase its size
-in case of platform instability/crashes.
+in case of platform instability/crashes. If the library is configured with
+`CONFIG_OPT_STACK_WM`, `coop_stack_wm()` may be used to assess maximum thread
+stack usage while choosing the optimal thread stack size configuration.
 
 ## Platform Callbacks
 
