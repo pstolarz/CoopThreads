@@ -534,6 +534,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
         {
             sched.thrds[i].proc = proc;
             sched.thrds[i].name = name;
+            sched.thrds[i].stack = NULL;
             sched.thrds[i].stack_sz =
                 (!stack_sz ? CONFIG_DEFAULT_STACK_SIZE : stack_sz);
             sched.thrds[i].arg = arg;
@@ -572,6 +573,26 @@ static inline void _yield(coop_thrd_state_t new_state)
                 sched.cur_thrd, _state_name(sched.cur_thrd));
 
             /* allocate thread stack */
+            /*
+             * NOTE: For performance reason the allocation takes place after
+             * the call to the thread routine while the routine yields its
+             * control to the scheduler for the first time (there is no point
+             * to allocate thread's stack for a routine which simply enters and
+             * immediately exists without yielding to the scheduler, since the
+             * stack would not be used in such case).
+             * For this reason the stack used by the thread is (in most cases)
+             * larger than the size indicated by its requested value. This extra
+             * space is the one which has already been allocated while entering
+             * the thread routine for the first time (so embracing all or part
+             * of its local variables created on the stack new frame).
+             * This approach has this benefit, a library user needs not to take
+             * care about thread local variables size calculation occupying its
+             * stack, since by moving them to the routine's main scope they will
+             * be allocated on the thread stack frame while entering the routine.
+             * Library user's requested stack size must in this case embrace
+             * stack space which is used dynamically by the thread during its
+             * lifetime (including preemptive ISRs).
+             */
             sched.thrds[sched.cur_thrd].stack =
                 alloca(sched.thrds[sched.cur_thrd].stack_sz);
             memset(sched.thrds[sched.cur_thrd].stack, STACK_PADD,
@@ -719,7 +740,12 @@ size_t coop_stack_wm()
 {
     size_t stack_sz = sched.thrds[sched.cur_thrd].stack_sz;
     unsigned char *stack = (unsigned char*)sched.thrds[sched.cur_thrd].stack;
-    size_t f, f2; /* free space space water-marks */
+    size_t f, f2; /* free space water-marks */
+
+    if (!stack) {
+        /* stack not yet allocated (the routine called before first yield) */
+        return 0;
+    }
 
     /* first check most common type of stack (growing into lower addresses) */
     for (f = stack_sz; f && stack[f - 1] == STACK_PADD; f--);

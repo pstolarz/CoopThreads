@@ -2,7 +2,7 @@
 
 `CoopThreads` is a lightweight, platform agnostic cooperative threads library
 with round-robin scheduler. The library is intended to be used on resource
-constrained platforms (e.g. 8-bit AVR) where using fully-fledge RTOS would be
+constrained platforms (e.g. 8-bit AVR) where using fully-fledged RTOS would be
 problematic.
 
 The library has been tested on the following platforms:
@@ -89,14 +89,14 @@ following example.
    over the thread 1 stack.
 
 **IMPORTANT NOTE**: Setting up thread stack size shall take into account not
-only all local variables created and allocations performed on the stack by the
-thread routine during its run-time, but also must foresee some additional stack
-space required by preemptive ISRs activities. For this reason exact minimal
-thread stack size for a given thread routine is fluent and may substantially
-differ for various platforms and development environments. If low memory RAM
-usage is critical it's usually feasible to start with the trial and error
-method - try with some minimal thread stack size value and increase its size
-in case of platform instability/crashes. If the library is configured with
+only dynamic changes of the thread stack resulting from activities performed by
+a thread during its run-time, but also must foresee some additional stack space
+required by preemptive ISRs activities. For this reason exact minimal thread
+stack size for a given thread routine is fluent and may substantially differ
+for various platforms and development environments. If low memory RAM usage is
+critical, it's usually feasible to start with the trial and error method - try
+with some minimal thread stack size value and increase its size in case of
+platform instability/crashes. If the library is configured with
 `CONFIG_OPT_STACK_WM`, `coop_stack_wm()` may be used to assess maximum thread
 stack usage while choosing the optimal thread stack size configuration.
 

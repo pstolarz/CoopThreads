@@ -290,8 +290,8 @@ void coop_notify_all(int sem_id);
  *
  * @note The routine tries to detect type of the platform stack (growing into
  *     lower or higher addresses). Note the algorithm may not to be always
- *     perfectly accurate therefore the returned value shall be treated as an
- *     indicator while experimenting with various stack sizes.
+ *     perfectly accurate therefore the returned value shall be treated merely
+ *     as an indicator while experimenting with various stack sizes.
  * @note To be called from thread routine only.
  */
 size_t coop_stack_wm();
