@@ -1,9 +1,9 @@
 # CoopThreads
 
-`CoopThreads` is a lightweight, platform agnostic cooperative threads library
-with round-robin scheduler. The library is intended to be used on resource
-constrained platforms (e.g. 8-bit AVR) where using fully-fledged RTOS would be
-problematic.
+`CoopThreads` is a lightweight, platform agnostic, stackful cooperative threads
+library with round-robin scheduler. The library is intended to be used on
+resource constrained platforms (e.g. 8-bit AVR) where using fully-fledged RTOS
+would be problematic.
 
 The library has been tested on the following platforms:
 
@@ -13,6 +13,9 @@ The library has been tested on the following platforms:
     * Tested on ESP32-DevKitC (ESP32-WROOM-32)
 * Arduino ESP8266.
     * Tested on WeMos D1
+* Unix/POSIX
+    * Mostly used for unit testing. See [`extras/test`](extras/test) directory
+      content as a reference how to use the library on POSIX conforming platforms.
 
 ## Features
 
@@ -36,19 +39,21 @@ The library has been tested on the following platforms:
 ## Usage
 
 Refer to [`examples`](examples) directory for examples presenting usage of the
-various library features. Thorough API specification is contained as inline
-documentation in C headers.
+various library features in Arduino environment. Thorough API specification is
+contained as inline documentation in [`src/coop_threads.h`](src/coop_threads.h)
+header.
 
 File [`src/coop_config.h`](src/coop_config.h) contains parameters
 configuring the library functionality. See the file for more details.
 
 ## Thread Stack
 
-Each thread running under control of the library works on its own stack. The
-stack size may be set for each thread separately during thread creation. It's
-important to note the thread stacks are created on the main stack the library
-code is running on, therefore it is **critical to assure proper main stack size
-while using the library.**
+`CoopThreads` is a stackful threads library, which means each thread running
+under control of the library works on its own stack. The stack size may be set
+for each thread separately during thread creation. It's important to note the
+thread stacks are created on the main stack the library code is running on,
+therefore it is **critical to assure proper main stack size while using the
+library.**
 
 The library controls thread stack creation and removal as explained on the
 following example.
