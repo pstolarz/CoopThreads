@@ -12,9 +12,7 @@
 
 #include <alloca.h>
 #include <setjmp.h>
-#include <stdbool.h>
-#include <string.h>     /* memset() */
-#include <sys/types.h>  /* ssize_t */
+#include <string.h> /* memset() */
 #include "coop_threads.h"
 
 #ifdef CONFIG_NOEXIT_STATIC_THREADS
