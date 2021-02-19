@@ -62,16 +62,8 @@ void setup()
     Serial.println("Threads 1-5 finished\n");
 
     coop_sched_thread(thrd_proc, "thrd_6", THREAD_STACK_SIZE, (void*)6);
-    coop_sched_thread(thrd_proc, "thrd_7", THREAD_STACK_SIZE, (void*)5);
-    coop_sched_thread(thrd_proc, "thrd_8", THREAD_STACK_SIZE, (void*)4);
-    coop_sched_thread(thrd_proc, "thrd_9", THREAD_STACK_SIZE, (void*)3);
-    coop_sched_thread(thrd_proc, "thrd_10", THREAD_STACK_SIZE, (void*)2);
     coop_sched_service();
-    Serial.println("Threads 6-10 finished\n");
-
-    coop_sched_thread(thrd_proc, "thrd_11", THREAD_STACK_SIZE, (void*)1);
-    coop_sched_service();
-    Serial.println("Thread 11 finished\n");
+    Serial.println("Thread 6 finished\n");
 }
 
 void loop()
