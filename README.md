@@ -23,15 +23,13 @@ The library has been tested on the following platforms:
   and `alloca(3)` to save/restore execution context and allocate thread stacks
   respectively. Therefore it shall be possible to use for large number of
   conforming platforms.
-
+* `CoopThreads` doesn't use heap memory. Threads stacks are allocated on the
+  main stack the library runs on. No stack copy occurs on thread context switch.
 * Idle related API allows switching the platform to a desired sleep mode and
   reduce power consumption.
-
 * Wait/notify support for effective threads synchronization.
-
 * Small and configurable footprint. Unused features may be turned off and reduce
   footprint of a compiled image.
-
 * Although the library was created for Arduino environment in mind, it may be
   easily ported for other development platforms. See [Platform Callbacks](#platform-callbacks)
   section for more details.
