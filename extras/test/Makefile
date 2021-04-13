@@ -26,13 +26,13 @@ t01_sched_switch: TDEFS=-DT01
 t02_idle: TDEFS=-DT02
 t03_idle_run: TDEFS=-DT03
 t04_yield_after: TDEFS=-DT04
-t05_wait_notify_sngl: TDEFS+=-DT05
-t06_wait_notify_all: TDEFS+=-DT06
-t07_idle_wait: TDEFS+=-DT07
-t08_wait_cond: TDEFS+=-DT08
-t09_stack_wm: TDEFS+=-DT09
+t05_wait_notify_sngl: TDEFS=-DT05
+t06_wait_notify_all: TDEFS=-DT06
+t07_idle_wait: TDEFS=-DT07
+t08_wait_cond: TDEFS=-DT08
+t09_stack_wm: TDEFS=-DT09
 
-st01_enter_exit: TDEFS+=-DST01
+st01_enter_exit: TDEFS=-DST01
 
 all: build
 	for t in $(TESTS); do echo "TEST: $$t"; ./$$t; echo; done;
@@ -42,11 +42,10 @@ build: $(TESTS) $(STRESS_TESTS)
 lib: libclean $(LIBOBJS)
 
 clean: libclean
-	$(RM) *.o $(TESTS) $(STRESS_TESTS)
+	$(RM) $(TESTS) $(STRESS_TESTS)
 
 libclean:
-	$(RM) $(LIBDIR)/*.o
-	$(RM) $(LIBDIR)/platform/*.o
+	$(RM) $(LIBOBJS)
 
 %: %.c
 	CFLAGS="$(TDEFS)" $(MAKE) lib
