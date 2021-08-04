@@ -92,16 +92,18 @@ following example.
    over the thread 1 stack.
 
 **IMPORTANT NOTE**: Setting up thread stack size shall take into account not
-only dynamic changes of the thread stack resulting from activities performed by
-a thread during its run-time, but also must foresee some additional stack space
-required by preemptive ISRs activities. For this reason exact minimal thread
-stack size for a given thread routine is fluent and may substantially differ
-for various platforms and development environments. If low memory RAM usage is
-critical, it's usually feasible to start with the trial and error method - try
-with some minimal thread stack size value and increase its size in case of
-platform instability/crashes. If the library is configured with
-`CONFIG_OPT_STACK_WM`, `coop_stack_wm()` may be used to assess maximum thread
-stack usage while choosing the optimal thread stack size configuration.
+only dynamic changes of the thread stack resulting from activities performed
+by a thread during its run-time (e.g. calls to `printf(3)`, which extensively
+uses stack allocated space), but also must foresee some additional stack space
+required by preemptive ISRs activities (for platforms with such ISR characteristics).
+For this reason the exact minimal thread stack size for a given thread routine
+is fluent and may substantially differ for various platforms and development
+environments. If low memory RAM usage is critical, it's usually feasible to
+start with the trial and error method - try with some minimal thread stack size
+value and increase its size in case of platform instability/crashes. If the
+library is configured with `CONFIG_OPT_STACK_WM`, `coop_stack_wm()` may be used
+to assess maximum thread stack usage while choosing the optimal thread stack
+size configuration.
 
 ## Platform Callbacks
 
