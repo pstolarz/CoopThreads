@@ -47,11 +47,13 @@
 
 static unsigned flags = 0U;
 
-extern "C" bool flags_2_or_5(void) {
+extern "C" bool flags_2_or_5(void *cv) {
+    (void)cv;
     return ((flags & (FLAG_2 | FLAG_5)) != 0);
 }
 
-extern "C" bool flags_2_and_5(void) {
+extern "C" bool flags_2_and_5(void *cv) {
+    (void)cv;
     return ((flags & (FLAG_2 | FLAG_5)) == (FLAG_2 | FLAG_5));
 }
 

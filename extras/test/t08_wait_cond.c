@@ -16,9 +16,9 @@
 
 static unsigned counter = 0;
 
-static bool wait_predic(void *arg)
+static bool wait_predic(void *cv)
 {
-    unsigned thrshld = (unsigned)(size_t)arg;
+    unsigned thrshld = (unsigned)(size_t)cv;
     return thrshld == counter;
 }
 
