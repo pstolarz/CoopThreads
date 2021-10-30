@@ -77,12 +77,12 @@ typedef unsigned long coop_tick_t;
 #define COOP_MAX_PERIOD (COOP_MAX_TICK - COOP_OVER_TICKS + 1)
 
 /**
- * Run scheduler service to run scheduled threads.
- * The routine returns when last scheduled thread ends.
+ * Start scheduler service to run scheduled threads.
+ * The routine returns when the last scheduled thread ends.
  *
  * @note If the library is compiled with @ref CONFIG_NOEXIT_STATIC_THREADS
- *     the routine is not intended to exit. @c coop_sched_service() ends
- *     at assertion check in case all scheduled thread would finish.
+ *     the routine is not intended to exit. @c coop_sched_service() fires
+ *     an assertion in case all scheduled threads would finish.
  */
 void coop_sched_service(void);
 
@@ -95,7 +95,7 @@ void coop_sched_service(void);
  *     @c CONFIG_DEFAULT_STACK_SIZE is used.
  * @param arg User argument passed untouched to the thread routine.
  *
- * @return COOP_SUCCESS Function finishes with success.
+ * @return COOP_SUCCESS Function finished with success.
  * @return COOP_ERR_INV_ARG Invalid argument.
  * @return COOP_ERR_LIMIT Maximum number of threads reached.
  */
@@ -106,7 +106,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
  * Get currently running thread name (as passed to @ref coop_sched_thread()
  * during thread creation).
  *
- * @note To be called from thread routine only.
+ * @note To be called from the thread routine only.
  */
 const char *coop_thread_name(void);
 
@@ -115,7 +115,7 @@ const char *coop_thread_name(void);
  * Declare the currently running thread shall be idle for specific @c period
  * of ticks. The @period argument must not be greater than @ref COOP_MAX_PERIOD.
  *
- * @note To be called from thread routine only.
+ * @note To be called from the thread routine only.
  *
  * @note Due to character of the cooperative scheduling, @c coop_idle() routine
  *     doesn't guarantee the calling thread will be re-run (waken-up) after the
@@ -137,16 +137,16 @@ void coop_idle(coop_tick_t period);
  * Similar to @ref coop_yield() but the yield happens only if current clock
  * tick occurs after the tick passed by @c *after argument.
  *
- * @param after In/out argument. Points to clock tick after which yielding to
- *     the scheduler shall occur. After returning back to the yielded thread
+ * @param after In/out argument. Points to a clock tick after which yielding
+ *     to the scheduler shall occur. After returning back to the yielded thread
  *     @c after is incremented by @c period value. The argument is not updated
  *     if the execution switch doesn't occur.
  * @param period Period of time in clock ticks to increment @c after value.
  *     The argument must not be greater than @ref COOP_MAX_PERIOD.
  *
- * @note To be called from thread routine only.
+ * @note To be called from the thread routine only.
  *
- * @note The routine is intended to be used in time-consuming loop to call
+ * @note The routine is intended to be used in time-consuming loop to be called
  *     periodically to check if the routine doesn't spend too much time running
  *     and return to the scheduler if so. To be used as in the following code
  *     snippet:
@@ -179,7 +179,7 @@ void coop_yield_after(coop_tick_t *after, coop_tick_t period);
 /**
  * Yield currently running thread back to scheduler.
  *
- * @note To be called from thread routine only.
+ * @note To be called from the thread routine only.
  */
 void coop_yield(void);
 #endif
@@ -192,7 +192,7 @@ void coop_yield(void);
     defined(CONFIG_OPT_YIELD_AFTER) || \
     defined(CONFIG_OPT_WAIT)
 /**
- * Get clock tick for at routine call time callback.
+ * Get clock tick at the moment of the callback-routine call.
  */
 coop_tick_t coop_tick_cb();
 #endif
@@ -219,20 +219,20 @@ void coop_idle_cb(coop_tick_t period);
  * @param sem_id Semaphore id. This is an arbitrary chosen integer value used
  *     to match waiting thread(s) with a notification signal.
  * @param timeout A timeout value the thread will wait for a notification
- *     before timeout will be reported. Pass 0 for infinite wait.
+ *     before the timeout will be reported. Pass 0 for infinite wait.
  *
  * @return COOP_SUCCESS Notification signal received
  * @return COOP_ERR_TIMEOUT Timeout reached.
  *
- * @note To be called from thread routine only.
+ * @note To be called from the thread routine only.
  *
  * @note @c coop_wait() routine may switch the system to the idle state (via
  *     @ref coop_idle_cb() callback if @c CONFIG_OPT_IDLE is configured). It
- *     enables waiting-for-a-hardware events support. For example incoming
- *     network packet may wake-up the hardware from an idle sleep-mode and its
- *     ISR will notify thread(s) about the new packet arrival. Since the timeout
- *     may be infinite (@c timeout set to 0) the system may be switched to the
- *     indefinitely long idle time. This should be taken into account while
+ *     enables waiting-for-a-hardware events support. For example an incoming
+ *     network packet may wake-up the hardware from a sleep-mode and its ISR
+ *     will notify thread(s) about the new packet arrival. Since the configured
+ *     timeout may be infinite (@c timeout set to 0) the system may be switched
+ *     to indefinitely long idle time. This should be taken into account while
  *     using the routine.
  *
  * @see coop_notify()
@@ -255,7 +255,7 @@ void coop_idle_cb(coop_tick_t period);
  * @return COOP_SUCCESS Notification signal received
  * @return COOP_ERR_TIMEOUT Timeout reached.
  *
- * @note To be called from thread routine only.
+ * @note To be called from the thread routine only.
  * @see coop_wait() for additional notes.
  */
 coop_error_t coop_wait_cond(
@@ -264,7 +264,7 @@ coop_error_t coop_wait_cond(
 /**
  * Send notification signal for a single thread waiting on @c sem_id.
  *
- * @note To be called from arbitrary routine including ISR.
+ * @note To be called from an arbitrary routine including ISR.
  *
  * @note While calling from ISR debug logs must be disabled or handled in
  *     a special way (see @ref CONFIG_DBG_LOG_CB_ALT) to avoid interrupt
@@ -292,7 +292,8 @@ void coop_notify_all(int sem_id);
  *     lower or higher addresses). Note the algorithm may not to be always
  *     perfectly accurate therefore the returned value shall be treated merely
  *     as an indicator while experimenting with various stack sizes.
- * @note To be called from thread routine only.
+ *
+ * @note To be called from the thread routine only.
  */
 size_t coop_stack_wm();
 #endif

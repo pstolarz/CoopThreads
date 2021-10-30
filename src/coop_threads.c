@@ -505,8 +505,8 @@ run:
 
 #ifdef CONFIG_NOEXIT_STATIC_THREADS
     /*
-     * Can't exit the routine since stack has not been unwinded up to
-     * its entry point. Assertion will raise the exception in this case.
+     * Can't exit the routine since stack has not been unwinded
+     * up to its entry point. Assertion will fire in this case.
      */
     coop_dbg_log_cb("UNEXPECTED: coop_sched_service() exits!\n");
     assert(false);
