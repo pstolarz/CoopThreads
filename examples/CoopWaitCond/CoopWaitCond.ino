@@ -45,17 +45,10 @@
 #define FLAG_4   (1 << 3)
 #define FLAG_5   (1 << 4)
 
-static unsigned flags = 0U;
-
-extern "C" bool flags_2_or_5(void *cv) {
-    (void)cv;
-    return ((flags & (FLAG_2 | FLAG_5)) != 0);
-}
-
-extern "C" bool flags_2_and_5(void *cv) {
-    (void)cv;
-    return ((flags & (FLAG_2 | FLAG_5)) == (FLAG_2 | FLAG_5));
-}
+typedef struct {
+    coop_predic_proc_t predic;
+    void *cv;
+} thrd_arg_t;
 
 /*
  * Waiting thread routine.
@@ -63,9 +56,10 @@ extern "C" bool flags_2_and_5(void *cv) {
 extern "C" void thrd_proc(void *arg)
 {
     char msg[16] = {};
+    thrd_arg_t thrd_arg = *(thrd_arg_t*)arg;
 
     /* wait until a waiting condition is fulfilled */
-    coop_wait_cond(1, 0, (coop_predic_proc_t)arg, NULL);
+    coop_wait_cond(1, 0, thrd_arg.predic, thrd_arg.cv);
 
     sprintf(msg, "%s EXIT\n", coop_thread_name());
     Serial.print(msg);
@@ -77,11 +71,10 @@ extern "C" void thrd_proc(void *arg)
 extern "C" void thrd_notify(void *arg)
 {
     char msg[16] = {};
-    (void)arg;
 
     for (int i=0; i < 5; i++) {
         coop_idle(1000);
-        flags |= (1 << i);
+        *(unsigned*)arg |= (1 << i);
 
         sprintf(msg, "Flag %d set\n", i+1);
         Serial.print(msg);
@@ -93,16 +86,30 @@ extern "C" void thrd_notify(void *arg)
     Serial.print(msg);
 }
 
+extern "C" bool flags_2_or_5(void *cv) {
+    unsigned flags = *(unsigned*)cv;
+    return ((flags & (FLAG_2 | FLAG_5)) != 0);
+}
+
+extern "C" bool flags_2_and_5(void *cv) {
+    unsigned flags = *(unsigned*)cv;
+    return ((flags & (FLAG_2 | FLAG_5)) == (FLAG_2 | FLAG_5));
+}
+
 void setup()
 {
+    unsigned flags = 0U;
+    thrd_arg_t flags_2_or_5_arg = { flags_2_or_5, &flags };
+    thrd_arg_t flags_2_and_5_arg = { flags_2_and_5, &flags };
+
     Serial.begin(115200);
 
     coop_sched_thread(
-        thrd_notify, "thrd_notify", THREAD_STACK_SIZE, NULL);
+        thrd_notify, "thrd_notify", THREAD_STACK_SIZE, &flags);
     coop_sched_thread(
-        thrd_proc, "thrd_or", THREAD_STACK_SIZE, (void*)flags_2_or_5);
+        thrd_proc, "thrd_or", THREAD_STACK_SIZE, &flags_2_or_5_arg);
     coop_sched_thread(
-        thrd_proc, "thrd_and", THREAD_STACK_SIZE, (void*)flags_2_and_5);
+        thrd_proc, "thrd_and", THREAD_STACK_SIZE, &flags_2_and_5_arg);
 
     coop_sched_service();
 }
