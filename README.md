@@ -13,11 +13,11 @@ The library has been tested on the following platforms:
     * Tested on ESP32-WROOM-32
 * Arduino ESP8266.
     * Tested on WeMos D1
+* STM32CubeMX (HAL)
+    * Tested on STM32WB5MMG
 * Unix/POSIX
     * Mostly used for unit testing. See [`extras/test`](extras/test) directory
       content as a reference how to use the library on POSIX conforming platforms.
-* STM32
-  * Tested on STM32WB5MMG
 
 ## Features
 
