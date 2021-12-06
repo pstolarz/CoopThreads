@@ -90,7 +90,9 @@ void coop_sched_service(void);
  * Schedule a thread to run.
  *
  * @param proc Thread routine. The argument is required.
- * @param name Thread name. May be @c NULL.
+ * @param name Thread name. May be @c NULL. This string is stored in the
+ *     library by a pointer therefore shall be maintained by a caller for
+ *     the whole thread's lifespan.
  * @param stack_sz Thread stack size. If 0 default value configured by
  *     @c CONFIG_DEFAULT_STACK_SIZE is used.
  * @param arg User argument passed untouched to the thread routine.
@@ -243,7 +245,7 @@ void coop_idle_cb(coop_tick_t period);
 /**
  * Conditional wait.
  *
- * @param sem_id Semapthore id.
+ * @param sem_id Semaphore id.
  * @param timeout Waiting timeout.
  * @param predic Waiting-predicate routine. If @c NULL no predicate is provided
  *     and @c coop_wait_cond() is equivalent to @c coop_wait() - works as
