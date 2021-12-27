@@ -21,33 +21,45 @@
 /**
  * Default thread stack size.
  */
-#define CONFIG_DEFAULT_STACK_SIZE 0x100U
+#ifndef CONFIG_DEFAULT_STACK_SIZE
+# define CONFIG_DEFAULT_STACK_SIZE 0x100U
+#endif
 
 /**
  * Maximum number of threads supported by the library.
  * Defined as threads pool size.
  */
-#define CONFIG_MAX_THREADS 5
+#ifndef CONFIG_MAX_THREADS
+# define CONFIG_MAX_THREADS 5
+#endif
 
 /**
  * Enable feature: idle threads support.
  */
-#define CONFIG_OPT_IDLE
+#ifndef CONFIG_OPT_IDLE
+# define CONFIG_OPT_IDLE
+#endif
 
 /**
  * Enable feature: @ref coop_yield_after() support.
  */
-#define CONFIG_OPT_YIELD_AFTER
+#ifndef CONFIG_OPT_YIELD_AFTER
+# define CONFIG_OPT_YIELD_AFTER
+#endif
 
 /**
  * Enable feature: @ref coop_wait(), @ref coop_notify() support.
  */
-#define CONFIG_OPT_WAIT
+#ifndef CONFIG_OPT_WAIT
+# define CONFIG_OPT_WAIT
+#endif
 
 /**
  * Enable feature: @ref coop_stack_wm() support.
  */
-//#define CONFIG_OPT_STACK_WM
+#ifndef CONFIG_OPT_STACK_WM
+//# define CONFIG_OPT_STACK_WM
+#endif
 
 /**
  * If the library is used to create static number of threads at its startup
@@ -61,7 +73,9 @@
  * @note For use for resource-constrained platforms only, where the standard
  *     configuration may be problematic.
  */
-//#define CONFIG_NOEXIT_STATIC_THREADS
+#ifndef CONFIG_NOEXIT_STATIC_THREADS
+//# define CONFIG_NOEXIT_STATIC_THREADS
+#endif
 
 /**
  * Uncomment to log debugging messages.
@@ -70,7 +84,9 @@
  *     thread stack sizes due to additional logging overhead. This may limit
  *     usage of this parameter on resource-constrained platforms.
  */
-//#define COOP_DEBUG
+#ifndef COOP_DEBUG
+//# define COOP_DEBUG
+#endif
 
 /**
  * Alternative implementation of @ref coop_dbg_log_cb() callback used for
@@ -91,7 +107,9 @@
  * #endif
  * @endcode
  */
-//#define CONFIG_DBG_LOG_CB_ALT
+#ifndef CONFIG_DBG_LOG_CB_ALT
+//# define CONFIG_DBG_LOG_CB_ALT
+#endif
 
 /**
  * Alternative implementation of @ref coop_tick_cb() callback.
@@ -101,7 +119,9 @@
  *     the following features is enabled: @ref CONFIG_OPT_YIELD_AFTER,
  *     @ref CONFIG_OPT_IDLE, @ref CONFIG_OPT_WAIT.
  */
-//#define CONFIG_TICK_CB_ALT
+#ifndef CONFIG_TICK_CB_ALT
+//# define CONFIG_TICK_CB_ALT
+#endif
 
 /**
  * Alternative implementation of @ref coop_idle_cb() callback.
@@ -110,7 +130,9 @@
  * @note The configuration parameter is valid only if at least one of
  *     the following features is enabled: @ref CONFIG_OPT_IDLE.
  */
-//#define CONFIG_IDLE_CB_ALT
+#ifndef CONFIG_IDLE_CB_ALT
+//# define CONFIG_IDLE_CB_ALT
+#endif
 
 #endif /* !COOP_DISABLE_DEFAULT_CONFIG */
 #endif /* __COOP_CONFIG_H__ */
