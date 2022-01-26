@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -21,7 +21,7 @@ static void thrd_1(void *arg)
 {
     coop_tick_t after = coop_tick_cb() + MAX_RUN_TIME;
 
-    for (int i=0; i < 10; i++)
+    for (int i = 0; i < 10; i++)
     {
         printf("%s: %d\n", coop_thread_name(), i+1);
         usleep(5000);
@@ -33,7 +33,7 @@ static void thrd_1(void *arg)
 
 static void thrd_2(void *arg)
 {
-    for (int i=0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) {
         printf("%s: %d\n", coop_thread_name(), i+1);
         coop_yield();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -23,7 +23,7 @@ static void thrd_grp1(void *arg)
 
     start =  coop_tick_cb();
     if (coop_wait(1, timeout) == COOP_SUCCESS) {
-        printf("%s: waited %lu ticks for singal\n",
+        printf("%s: waited %lu ticks for signal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {
         printf("%s: time-out; %lu ticks passed\n",
@@ -38,7 +38,7 @@ static void thrd_grp2(void *arg)
     coop_tick_t start =  coop_tick_cb();
 
     if (coop_wait(2, timeout) == COOP_SUCCESS) {
-        printf("%s: waited %lu ticks for singal\n",
+        printf("%s: waited %lu ticks for signal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {
         printf("%s: time-out; %lu ticks passed\n",

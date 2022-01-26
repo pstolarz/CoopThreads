@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -18,8 +18,11 @@ void coop_idle_cb(coop_tick_t period)
 {
     static unsigned call_n = 0;
 
+    /* short periods are ignored */
+    if (period == 1) return;
+
     call_n++;
-    printf("coop_idle_cb(%lu) called-back\n", (unsigned long)period);
+    printf("coop_idle_cb called-back for %lu\n", (unsigned long)period);
 
     if (period) {
         usleep((useconds_t)period * 1000);
@@ -28,7 +31,6 @@ void coop_idle_cb(coop_tick_t period)
             coop_notify_all(2);
         }
     } else {
-        sleep(1);
         if (call_n == 4)
             coop_notify(1);
     }
@@ -43,7 +45,7 @@ static void thrd_proc(void *arg)
 
     start =  coop_tick_cb();
     if (coop_wait(1, timeout) == COOP_SUCCESS) {
-        printf("%s: waited %lu ticks for singal\n",
+        printf("%s: waited %lu ticks for signal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {
         printf("%s: time-out; %lu ticks passed\n",
@@ -58,7 +60,7 @@ static void thrd_grp(void *arg)
     coop_tick_t start =  coop_tick_cb();
 
     if (coop_wait(2, timeout) == COOP_SUCCESS) {
-        printf("%s: waited %lu ticks for singal\n",
+        printf("%s: waited %lu ticks for signal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {
         printf("%s: time-out; %lu ticks passed\n",

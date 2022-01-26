@@ -1,17 +1,17 @@
-thrd_grp2_1: time-out; 100 ticks passed
-thrd_grp1_1: time-out; 100 ticks passed
-thrd_grp1_1 EXIT
-thrd_grp2_1 EXIT
-thrd_grp1_2: waited 150 ticks for singal
+thrd_grp2_1: time-out; (99)|(10[01]) ticks passed
+(thrd_grp1_1: time-out; (99)|(10[01]) ticks passed)|(thrd_grp2_1 EXIT)
+(thrd_grp1_1 EXIT)|(thrd_grp1_1: time-out; (99)|(10[01]) ticks passed)
+(thrd_grp2_1 EXIT)|(thrd_grp1_1 EXIT)
+thrd_grp1_2: waited (149)|(15[01]) ticks for signal
 thrd_grp1_2 EXIT
-thrd_grp1_3: waited 150 ticks for singal
+thrd_grp1_3: waited (149)|(15[01]) ticks for signal
 thrd_grp1_3 EXIT
-thrd_grp1_4: waited 150 ticks for singal
+thrd_grp1_4: waited (149)|(15[01]) ticks for signal
 thrd_grp1_4 EXIT
-thrd_grp2_2: time-out; 200 ticks passed
+thrd_grp2_2: time-out; (199)|(20[01]) ticks passed
 thrd_grp2_2 EXIT
 thrd_notify EXIT
-thrd_grp2_3: waited 250 ticks for singal
-thrd_grp2_4: waited 250 ticks for singal
+thrd_grp2_3: waited (249)|(25[01]) ticks for signal
+thrd_grp2_4: waited (249)|(25[01]) ticks for signal
 thrd_grp2_3 EXIT
 thrd_grp2_4 EXIT

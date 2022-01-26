@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020,2021 Piotr Stolarz
+ * Copyright (c) 2020-2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -34,7 +34,7 @@ static void thrd_proc(void *arg)
     if (coop_wait_cond(1, (coop_tick_t)(10 + thrd_arg.thrshld * 100U),
         wait_predic, arg) == COOP_SUCCESS)
     {
-        printf("%s: waited %lu ticks for singal\n",
+        printf("%s: waited %lu ticks for signal\n",
             coop_thread_name(), (unsigned long)(coop_tick_cb() - start));
     } else {
         printf("%s: time-out; %lu ticks passed\n",
@@ -45,7 +45,7 @@ static void thrd_proc(void *arg)
 
 static void thrd_notify(void *arg)
 {
-    for (int i=0; i < 6; i++) {
+    for (int i = 0; i < 6; i++) {
         coop_idle(100);
         (*(unsigned*)arg)++;
         coop_notify_all(1);

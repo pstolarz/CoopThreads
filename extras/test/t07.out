@@ -1,16 +1,16 @@
-coop_idle_cb(100) called-back
-thrd_grp_1: time-out; 100 ticks passed
-thrd_1: time-out; 100 ticks passed
-thrd_1 EXIT
-thrd_grp_1 EXIT
-coop_idle_cb(100) called-back
-thrd_grp_2: waited 200 ticks for singal
-thrd_grp_3: waited 200 ticks for singal
-thrd_2: waited 200 ticks for singal
-thrd_2 EXIT
-thrd_grp_2 EXIT
-thrd_grp_3 EXIT
-coop_idle_cb(0) called-back
-coop_idle_cb(0) called-back
-thrd_3: waited 2200 ticks for singal
+coop_idle_cb called-back for (99)|(100)
+thrd_grp_1: time-out; 10[0-2] ticks passed
+(thrd_1: time-out; 10[0-2] ticks passed)|(thrd_grp_1 EXIT)
+(thrd_1 EXIT)|(thrd_1: time-out; 10[0-2] ticks passed)
+(thrd_grp_1 EXIT)|(thrd_1 EXIT)
+coop_idle_cb called-back for (99)|(100)
+(thrd_grp_2)|(thrd_2)|(thrd_grp_3): waited (199)|(20[01]) ticks for signal
+((thrd_grp_2)|(thrd_2)|(thrd_grp_3): waited (199)|(20[01]) ticks for signal)|((thrd_grp_2)|(thrd_2)|(thrd_grp_3) EXIT)
+((thrd_grp_2)|(thrd_2)|(thrd_grp_3): waited (199)|(20[01]) ticks for signal)|((thrd_grp_2)|(thrd_2)|(thrd_grp_3) EXIT)
+((thrd_grp_2)|(thrd_2)|(thrd_grp_3): waited (199)|(20[01]) ticks for signal)|((thrd_grp_2)|(thrd_2)|(thrd_grp_3) EXIT)
+((thrd_grp_2)|(thrd_2)|(thrd_grp_3): waited (199)|(20[01]) ticks for signal)|((thrd_grp_2)|(thrd_2)|(thrd_grp_3) EXIT)
+(thrd_grp_2)|(thrd_2)|(thrd_grp_3) EXIT
+coop_idle_cb called-back for 0
+coop_idle_cb called-back for 0
+thrd_3: waited (199)|(20[01]) ticks for signal
 thrd_3 EXIT

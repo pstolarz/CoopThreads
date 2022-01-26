@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020,2021 Piotr Stolarz
+ * Copyright (c) 2020,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -31,7 +31,7 @@ static void thrd_proc(void *arg)
 
         next_step = rand() % 10;
 
-        if ((next_step >=0 && next_step <=5)) {
+        if ((next_step >= 0 && next_step <= 5)) {
             /*
              * Probability 0.6: terminate current thread if it's most shallow
              */

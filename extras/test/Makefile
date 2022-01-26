@@ -35,7 +35,7 @@ t09_stack_wm: TDEFS=-DT09
 st01_enter_exit: TDEFS=-DST01
 
 all: build
-	for t in $(TESTS); do echo "TEST: $$t"; ./$$t; echo; done;
+	./tests_run.sh $(TESTS)
 
 build: $(TESTS) $(STRESS_TESTS)
 

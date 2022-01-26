@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -16,8 +16,11 @@
 
 void coop_idle_cb(coop_tick_t period)
 {
-    printf("coop_idle_cb(%lu) called-back\n", (unsigned long)period);
-    usleep((useconds_t)period * 1000U);
+    /* short or infinite periods are ignored */
+    if (period > 1) {
+        printf("coop_idle_cb called-back for %ld\n", (unsigned long)period);
+        usleep((useconds_t)period * 1000U);
+    }
 }
 
 void thrd_1(void *arg)
