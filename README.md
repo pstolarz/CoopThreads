@@ -1,5 +1,8 @@
 # CoopThreads
 
+![Tests status](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml/badge.svg?branch=master)
+<br><br>
+
 `CoopThreads` is a lightweight, platform agnostic, stackful cooperative threads
 library with round-robin scheduler. The library is intended to be used on
 resource constrained platforms (e.g. 8-bit AVR) where using fully-fledged RTOS

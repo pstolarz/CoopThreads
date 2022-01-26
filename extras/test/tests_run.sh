@@ -20,7 +20,7 @@ for test_exe in $*; do
             rc=$?
             [[ $(( i++ )) -ge 5 ]] && break
         done
-    else \
+    else
         ./$test_exe 1>/dev/null 2>$err_file
         rc=$?
     fi
