@@ -1,5 +1,5 @@
 /* common configuration */
-#define CONFIG_DEFAULT_STACK_SIZE 0x1000U
+#define CONFIG_DEFAULT_STACK_SIZE 0x2000U
 #define CONFIG_MAX_THREADS 10
 
 #ifdef T01
