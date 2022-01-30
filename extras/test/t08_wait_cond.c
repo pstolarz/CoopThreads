@@ -31,7 +31,7 @@ static void thrd_proc(void *arg)
     thrd_arg_t thrd_arg = *(thrd_arg_t*)arg;
 
     start =  coop_tick_cb();
-    if (coop_wait_cond(1, (coop_tick_t)(10 + thrd_arg.thrshld * 100U),
+    if (coop_wait_cond(1, ((coop_tick_t)thrd_arg.thrshld * 100 + 10),
         wait_predic, arg) == COOP_SUCCESS)
     {
         printf("%s: waited %lu ticks for signal\n",
