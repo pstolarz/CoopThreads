@@ -19,6 +19,8 @@
 
 static void thrd_1(void *arg)
 {
+    (void)arg;
+
     coop_tick_t after = coop_tick_cb() + MAX_RUN_TIME;
 
     for (int i = 0; i < 10; i++)
@@ -33,6 +35,8 @@ static void thrd_1(void *arg)
 
 static void thrd_2(void *arg)
 {
+    (void)arg;
+
     for (int i = 0; i < 5; i++) {
         printf("%s: %d\n", coop_thread_name(), i+1);
         coop_yield();
@@ -40,7 +44,7 @@ static void thrd_2(void *arg)
     printf("%s EXIT\n", coop_thread_name());
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     coop_sched_thread(thrd_1, "thrd_1", 0, NULL);
     coop_sched_thread(thrd_2, "thrd_2", 0, NULL);

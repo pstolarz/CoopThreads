@@ -1,5 +1,5 @@
 .SILENT:
-.PHONY: all build clean lib libclean
+.PHONY: all build clean lib libclean analyze
 
 LIBDIR=../../src
 CFLAGS+=-D__TEST__ -Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
@@ -42,11 +42,15 @@ build: $(TESTS) $(STRESS_TESTS)
 lib: libclean $(LIBOBJS)
 
 clean: libclean
-	$(RM) $(TESTS) $(STRESS_TESTS)
+	$(RM) -r $(TESTS) $(STRESS_TESTS) compile_commands.json report report-html
 
 libclean:
 	$(RM) $(LIBOBJS)
 
+analyze: clean
+	CodeChecker log -b "$(MAKE) build" -o compile_commands.json
+	CodeChecker analyze -o report --analyzers=clangsa --analyzers=clang-tidy compile_commands.json
+	-CodeChecker parse -e html -o report-html report
 %: %.c
 	CFLAGS="$(TDEFS)" $(MAKE) lib
 	$(CC) $(CFLAGS) $(TDEFS) $< -o $@ $(LIBOBJS)

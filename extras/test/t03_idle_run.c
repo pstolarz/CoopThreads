@@ -25,6 +25,8 @@ void coop_idle_cb(coop_tick_t period)
 
 void thrd_1(void *arg)
 {
+    (void)arg;
+
     for (int i = 0; i < 5; i++)
     {
         coop_tick_t start = coop_tick_cb();
@@ -38,6 +40,8 @@ void thrd_1(void *arg)
 
 void thrd_2(void *arg)
 {
+    (void)arg;
+
     for (int i = 0; i < 10; i++)
     {
         printf("%s: %d\n", coop_thread_name(), i+1);
@@ -51,7 +55,7 @@ void thrd_2(void *arg)
         (unsigned long)(coop_tick_cb() - start));
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     coop_sched_thread(thrd_1, "thrd_1", 0, NULL);
     coop_sched_thread(thrd_2, "thrd_2", 0, NULL);

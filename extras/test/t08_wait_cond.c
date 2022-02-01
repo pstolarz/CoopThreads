@@ -53,7 +53,7 @@ static void thrd_notify(void *arg)
     printf("%s EXIT\n", coop_thread_name());
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     unsigned counter = 0;
 

@@ -50,7 +50,7 @@ static void thrd_proc(void *arg)
     printf("thrd_%u: EXIT\n", thrd_id);
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     for (int i = 0; i < CONFIG_MAX_THREADS; i++) {
         coop_sched_thread(thrd_proc, NULL, 0, (void*)(size_t)(++thrd_cnt));

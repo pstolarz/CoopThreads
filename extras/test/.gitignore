@@ -7,5 +7,8 @@ t06_wait_notify_all
 t07_idle_wait
 t08_wait_cond
 t09_stack_wm
-
 st01_enter_exit
+
+compile_commands.json
+report/*
+report-html/*

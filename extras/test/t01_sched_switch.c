@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020,2021 Piotr Stolarz
+ * Copyright (c) 2020-2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -27,7 +27,7 @@ static void thrd_proc(void *arg)
         coop_thread_name(), (unsigned)coop_stack_wm());
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     coop_sched_thread(thrd_proc, "thrd_1", 0, (void*)(size_t)1);
     coop_sched_thread(thrd_proc, "thrd_2", 0, (void*)(size_t)2);

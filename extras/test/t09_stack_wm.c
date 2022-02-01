@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Piotr Stolarz
+ * Copyright (c) 2021,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -20,9 +20,9 @@
 #define CLEAR_STACK() \
     memset(stack, STACK_PADD, sizeof(stack));
 
-static void thrd_proc(void *arg) {}
+static void thrd_proc(void *arg) { (void)arg; }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     unsigned i;
     unsigned char stack[0x10];

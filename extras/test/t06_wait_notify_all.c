@@ -51,6 +51,8 @@ static void thrd_grp2(void *arg)
 
 static void thrd_notify(void *arg)
 {
+    (void)arg;
+
     coop_idle(150);
     coop_notify_all(1);
 
@@ -60,7 +62,7 @@ static void thrd_notify(void *arg)
     printf("%s EXIT\n", coop_thread_name());
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     coop_sched_thread(thrd_notify, "thrd_notify", 0, NULL);
 

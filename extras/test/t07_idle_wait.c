@@ -71,7 +71,7 @@ static void thrd_grp(void *arg)
     printf("%s EXIT\n", coop_thread_name());
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     coop_sched_thread(thrd_proc, "thrd_1", 0, (void*)(size_t)100U);
     coop_sched_thread(thrd_proc, "thrd_2", 0, (void*)(size_t)200U);
