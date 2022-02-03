@@ -1,7 +1,7 @@
 # CoopThreads
 
-![Tests status](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml/badge.svg?branch=master)
-<br><br>
+[![Tests status](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml/badge.svg?branch=master)](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml)
+<br>
 
 `CoopThreads` is a lightweight, platform agnostic, stackful cooperative threads
 library with round-robin scheduler. The library is intended to be used on
