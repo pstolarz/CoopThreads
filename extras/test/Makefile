@@ -49,7 +49,7 @@ libclean:
 
 analyze: clean
 	CodeChecker log -b "$(MAKE) build" -o compile_commands.json
-	CodeChecker analyze -o report --analyzers=clangsa --analyzers=clang-tidy compile_commands.json
+	CodeChecker analyze compile_commands.json -o report --analyzers clangsa clang-tidy
 	-CodeChecker parse -e html -o report-html report
 %: %.c
 	CFLAGS="$(TDEFS)" $(MAKE) lib
