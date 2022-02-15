@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020,2021 Piotr Stolarz
+ * Copyright (c) 2020-2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -20,6 +20,12 @@
  */
 #include "coop_threads.h"
 
+/*
+ * NOTE: The difference between stack sizes arise from sprintf(3) usage in
+ * the threads routines. printf's family of functions exploits the stack in
+ * extensive range which varies substantially between various platform
+ * implementations.
+ */
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 # define THREAD_STACK_SIZE 0x250U
 #elif ARDUINO_ARCH_AVR
