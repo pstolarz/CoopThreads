@@ -13,7 +13,7 @@
         "type": "git",
         "url": "https://github.com/pstolarz/CoopThreads"
     },
-    "version": "0.2.4",
+    "version": "0.2.5",
     "homepage": "https://github.com/pstolarz/CoopThreads",
     "frameworks": "Arduino",
     "examples": [
