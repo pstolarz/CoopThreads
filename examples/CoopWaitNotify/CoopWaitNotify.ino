@@ -20,16 +20,10 @@
  */
 #include "coop_threads.h"
 
-/*
- * NOTE: The difference between stack sizes arise from sprintf(3) usage in
- * the threads routines. printf's family of functions exploits the stack in
- * extensive range which varies substantially between various platform
- * implementations.
- */
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-# define THREAD_STACK_SIZE 0x250U
+# define THREAD_STACK_SIZE 0x400U
 #elif ARDUINO_ARCH_AVR
-# define THREAD_STACK_SIZE 0x50U
+# define THREAD_STACK_SIZE 0x80U
 #else
 /* use default */
 # define THREAD_STACK_SIZE 0
@@ -53,15 +47,15 @@ static int cnt = 0;
 extern "C" void thrd_odd(void *arg)
 {
     (void)arg;
-    char msg[32] = {};
 
     do {
         if (!(cnt & 1)) {
             /* wait for thrd_even to increment the counter */
             coop_wait(1, 0);
         } else {
-            sprintf(msg, "%s: %d\n", coop_thread_name(), cnt);
-            Serial.print(msg);
+            Serial.print(coop_thread_name());
+            Serial.print(": ");
+            Serial.println(cnt);
 
             /* increment to even value and notify about the change */
             cnt++;
@@ -70,8 +64,8 @@ extern "C" void thrd_odd(void *arg)
         }
     } while (cnt < 10);
 
-    sprintf(msg, "%s EXIT\n", coop_thread_name());
-    Serial.print(msg);
+    Serial.print(coop_thread_name());
+    Serial.println(" EXIT");
 }
 
 /*
@@ -80,15 +74,15 @@ extern "C" void thrd_odd(void *arg)
 extern "C" void thrd_even(void *arg)
 {
     (void)arg;
-    char msg[32] = {};
 
     do {
         if ((cnt & 1) != 0) {
             /* wait for thrd_odd to increment the counter */
             coop_wait(1, 0);
         } else {
-            sprintf(msg, "%s: %d\n", coop_thread_name(), cnt);
-            Serial.print(msg);
+            Serial.print(coop_thread_name());
+            Serial.print(": ");
+            Serial.println(cnt);
 
             /* increment to odd value and notify about the change */
             cnt++;
@@ -97,8 +91,8 @@ extern "C" void thrd_even(void *arg)
         }
     } while (cnt < 10);
 
-    sprintf(msg, "%s EXIT\n", coop_thread_name());
-    Serial.print(msg);
+    Serial.print(coop_thread_name());
+    Serial.println(" EXIT");
 }
 
 void setup()

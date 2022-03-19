@@ -20,16 +20,10 @@
  */
 #include "coop_threads.h"
 
-/*
- * NOTE: The difference between stack sizes arise from sprintf(3) usage in
- * the threads routines. printf's family of functions exploits the stack in
- * extensive range which varies substantially between various platform
- * implementations.
- */
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-# define THREAD_STACK_SIZE 0x250U
+# define THREAD_STACK_SIZE 0x400U
 #elif ARDUINO_ARCH_AVR
-# define THREAD_STACK_SIZE 0x50U
+# define THREAD_STACK_SIZE 0x80U
 #else
 /* use default */
 # define THREAD_STACK_SIZE 0
@@ -61,14 +55,13 @@ typedef struct {
  */
 extern "C" void thrd_proc(void *arg)
 {
-    char msg[16] = {};
     thrd_arg_t thrd_arg = *(thrd_arg_t*)arg;
 
     /* wait until a waiting condition is fulfilled */
     coop_wait_cond(1, 0, thrd_arg.predic, thrd_arg.cv);
 
-    sprintf(msg, "%s EXIT\n", coop_thread_name());
-    Serial.print(msg);
+    Serial.print(coop_thread_name());
+    Serial.println(" EXIT");
 }
 
 /*
@@ -76,20 +69,18 @@ extern "C" void thrd_proc(void *arg)
  */
 extern "C" void thrd_notify(void *arg)
 {
-    char msg[16] = {};
-
     for (int i=0; i < 5; i++) {
         coop_idle(1000);
         *(unsigned*)arg |= (1 << i);
 
-        sprintf(msg, "Flag %d set\n", i+1);
-        Serial.print(msg);
+        Serial.print("Flag ");
+        Serial.print(i + 1);
+        Serial.println(" set");
 
         coop_notify_all(1);
     }
-
-    sprintf(msg, "%s EXIT\n", coop_thread_name());
-    Serial.print(msg);
+    Serial.print(coop_thread_name());
+    Serial.println(" EXIT");
 }
 
 extern "C" bool flags_2_or_5(void *cv) {

@@ -20,16 +20,10 @@
  */
 #include "coop_threads.h"
 
-/*
- * NOTE: The difference between stack sizes arise from sprintf(3) usage in
- * the threads routines. printf's family of functions exploits the stack in
- * extensive range which varies substantially between various platform
- * implementations.
- */
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-# define THREAD_STACK_SIZE 0x250U
+# define THREAD_STACK_SIZE 0x400U
 #elif ARDUINO_ARCH_AVR
-# define THREAD_STACK_SIZE 0x50U
+# define THREAD_STACK_SIZE 0x80U
 #else
 /* use default */
 # define THREAD_STACK_SIZE 0
@@ -47,19 +41,19 @@
  */
 extern "C" void thrd_proc(void *arg)
 {
-    char msg[16] = {};
     unsigned prio = (int)(size_t)arg;
     coop_tick_t after = coop_tick_cb() + 100*prio;
 
     for (int i = 0; i < 10; i++) {
-        sprintf(msg, "%s: %d\n", coop_thread_name(), i+1);
-        Serial.print(msg);
+        Serial.print(coop_thread_name());
+        Serial.print(": ");
+        Serial.println(i + 1);
 
         delay(100);
         coop_yield_after(&after, 100*prio);
     }
-    sprintf(msg, "%s EXIT\n", coop_thread_name());
-    Serial.print(msg);
+    Serial.print(coop_thread_name());
+    Serial.println(" EXIT");
 }
 
 void setup()
