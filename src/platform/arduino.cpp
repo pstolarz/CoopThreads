@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Piotr Stolarz
+ * Copyright (c) 2020,2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -20,7 +20,7 @@
 
 extern "C" {
 
-#if defined(COOP_DEBUG) && !defined(CONFIG_DBG_LOG_CB_ALT)
+#if COOP_DEBUG && !CONFIG_DBG_LOG_CB_ALT
 /**
  * Debug message log callback.
  */
@@ -46,7 +46,7 @@ uint16_t coop_avr_get_sp(void) {
 # endif
 #endif
 
-#ifndef CONFIG_TICK_CB_ALT
+#if !CONFIG_TICK_CB_ALT
 /**
  * Get clock tick callback (msecs).
  */
@@ -56,7 +56,7 @@ coop_tick_t coop_tick_cb()
 }
 #endif
 
-#ifndef CONFIG_IDLE_CB_ALT
+#if !CONFIG_IDLE_CB_ALT
 /**
  * System idle callback.
  */

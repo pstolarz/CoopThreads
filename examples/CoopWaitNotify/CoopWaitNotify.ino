@@ -32,10 +32,10 @@
 #if CONFIG_MAX_THREADS < 2
 # error CONFIG_MAX_THREADS >= 2 is required
 #endif
-#ifndef CONFIG_OPT_IDLE
+#if !CONFIG_OPT_IDLE
 # error CONFIG_OPT_IDLE need to be configured
 #endif
-#ifndef CONFIG_OPT_WAIT
+#if !CONFIG_OPT_WAIT
 # error CONFIG_OPT_WAIT need to be configured
 #endif
 

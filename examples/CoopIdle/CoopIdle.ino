@@ -32,10 +32,10 @@
 #if CONFIG_MAX_THREADS < 3
 # error CONFIG_MAX_THREADS >= 3 is required
 #endif
-#ifndef CONFIG_OPT_IDLE
+#if !CONFIG_OPT_IDLE
 # error CONFIG_OPT_IDLE need to be configured
 #endif
-#ifndef CONFIG_IDLE_CB_ALT
+#if !CONFIG_IDLE_CB_ALT
 # error CONFIG_IDLE_CB_ALT need to be configured
 #endif
 

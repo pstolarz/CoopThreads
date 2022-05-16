@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020,2021 Piotr Stolarz
+ * Copyright (c) 2020-2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -36,7 +36,7 @@ typedef enum
  */
 typedef void (*coop_thrd_proc_t)(void *arg);
 
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
 /**
  * Waiting-predicate routine type.
  *
@@ -80,7 +80,7 @@ typedef unsigned long coop_tick_t;
  * Start scheduler service to run scheduled threads.
  * The routine returns when the last scheduled thread ends.
  *
- * @note If the library is compiled with @ref CONFIG_NOEXIT_STATIC_THREADS
+ * @note If the library is configured with @ref CONFIG_NOEXIT_STATIC_THREADS
  *     the routine is not intended to exit. @c coop_sched_service() fires
  *     an assertion in case all scheduled threads would finish.
  */
@@ -112,7 +112,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
  */
 const char *coop_thread_name(void);
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
 /**
  * Declare the currently running thread shall be idle for specific @c period
  * of ticks. The @period argument must not be greater than @ref COOP_MAX_PERIOD.
@@ -134,7 +134,7 @@ const char *coop_thread_name(void);
 void coop_idle(coop_tick_t period);
 #endif
 
-#ifdef CONFIG_OPT_YIELD_AFTER
+#if CONFIG_OPT_YIELD_AFTER
 /**
  * Similar to @ref coop_yield() but the yield happens only if current clock
  * tick occurs after the tick passed by @c *after argument.
@@ -172,7 +172,7 @@ void coop_idle(coop_tick_t period);
 void coop_yield_after(coop_tick_t *after, coop_tick_t period);
 #endif
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
 /**
  * coop_yield() is an alias to coop_idle(0).
  */
@@ -190,16 +190,14 @@ void coop_yield(void);
  * Platform specific callbacks specification section.
  */
 
-#if defined(CONFIG_OPT_IDLE) || \
-    defined(CONFIG_OPT_YIELD_AFTER) || \
-    defined(CONFIG_OPT_WAIT)
+#if CONFIG_OPT_IDLE || CONFIG_OPT_YIELD_AFTER || CONFIG_OPT_WAIT
 /**
  * Get clock tick at the moment of the callback-routine call.
  */
 coop_tick_t coop_tick_cb();
 #endif
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
 /**
  * System idle callback.
  *
@@ -214,7 +212,7 @@ coop_tick_t coop_tick_cb();
 void coop_idle_cb(coop_tick_t period);
 #endif
 
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
 /**
  * Switch current thread into wait-for-a-notification-signal state.
  *
@@ -240,7 +238,7 @@ void coop_idle_cb(coop_tick_t period);
  * @see coop_notify()
  * @see coop_notify_all()
  */
-#define coop_wait(sem_id, timeout) coop_wait_cond(sem_id, timeout, NULL, NULL)
+# define coop_wait(sem_id, timeout) coop_wait_cond(sem_id, timeout, NULL, NULL)
 
 /**
  * Conditional wait.
@@ -284,7 +282,7 @@ void coop_notify(int sem_id);
 void coop_notify_all(int sem_id);
 #endif /* CONFIG_OPT_WAIT */
 
-#ifdef CONFIG_OPT_STACK_WM
+#if CONFIG_OPT_STACK_WM
 /**
  * Get maximum stack usage water-mark for the current thread.
  *
@@ -300,15 +298,15 @@ void coop_notify_all(int sem_id);
 size_t coop_stack_wm();
 #endif
 
-#ifdef COOP_DEBUG
+#if COOP_DEBUG
 /**
  * Debug message log callback.
  */
 void coop_dbg_log_cb(const char *format, ...);
 #else
 /* debug turned off */
-#define coop_dbg_log_cb(...)
-#endif /* COOP_DEBUG */
+# define coop_dbg_log_cb(...)
+#endif
 
 #ifdef __cplusplus
 }

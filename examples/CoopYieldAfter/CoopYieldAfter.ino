@@ -32,7 +32,7 @@
 #if CONFIG_MAX_THREADS < 3
 # error CONFIG_MAX_THREADS >= 3 is required
 #endif
-#ifndef CONFIG_OPT_YIELD_AFTER
+#if !CONFIG_OPT_YIELD_AFTER
 # error CONFIG_OPT_YIELD_AFTER need to be configured
 #endif
 

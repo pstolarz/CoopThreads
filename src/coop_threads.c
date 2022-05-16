@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020,2021 Piotr Stolarz
+ * Copyright (c) 2020-2022 Piotr Stolarz
  * Lightweight cooperative threads library
  *
  * Distributed under the 2-clause BSD License (the License)
@@ -15,7 +15,7 @@
 #include <string.h> /* memset() */
 #include "coop_threads.h"
 
-#ifdef CONFIG_NOEXIT_STATIC_THREADS
+#if CONFIG_NOEXIT_STATIC_THREADS
 # include <assert.h>
 #endif
 
@@ -28,27 +28,27 @@
 typedef enum
 {
     EMPTY = 0,  /** Empty context slot on the pool. Id must be 0. */
-#ifndef CONFIG_NOEXIT_STATIC_THREADS
+#if !CONFIG_NOEXIT_STATIC_THREADS
     HOLE,       /** Thread terminated but its stack still occupies the main
                     stack, where threads stacks are allocated. */
 #endif
     NEW,        /** Already created thread, not yet started. */
     RUN,        /** Running thread. */
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
     IDLE,       /** Thread is idle. */
 #endif
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
     WAIT,       /** Waiting thread. */
 #endif
 } coop_thrd_state_t;
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
 # define _IS_IDLE(_state) ((_state) == IDLE)
 #else
 # define _IS_IDLE(_state) (0)
 #endif
 
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
 # define _IS_WAIT(_state) ((_state) == WAIT)
 #else
 # define _IS_WAIT(_state) (0)
@@ -79,15 +79,15 @@ typedef struct
     /** Thread state. */
     coop_thrd_state_t state;
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
     /** Clock tick the thread is idle up to. */
     coop_tick_t idle_to;
 #endif
-#ifdef CONFIG_OPT_YIELD_AFTER
+#if CONFIG_OPT_YIELD_AFTER
     /** Scheduler to thread switch clock tick */
     coop_tick_t switch_tick;
 #endif
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
     /** Semaphore id. */
     int sem_id;
 
@@ -107,7 +107,7 @@ typedef struct
         unsigned char res:   6; /** Reserved. */
     } wait_flgs;
 #endif
-#ifndef CONFIG_NOEXIT_STATIC_THREADS
+#if !CONFIG_NOEXIT_STATIC_THREADS
     /**
      * Thread stack depth on the main stack. 1 for the first started (deepest)
      * thread. @c coop_sched_ctx_t::depth for latest (most shallow) thread.
@@ -132,11 +132,11 @@ typedef struct
     /** Number of occupied (non empty) thread slots. */
     unsigned busy_n;
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
     /** Number of idle and waiting threads. */
     unsigned idle_n;
 #endif
-#ifndef CONFIG_NOEXIT_STATIC_THREADS
+#if !CONFIG_NOEXIT_STATIC_THREADS
     /** Number of holes (terminated threads occupying the main stack). */
     unsigned hole_n;
 
@@ -152,20 +152,20 @@ typedef struct
 
 static coop_sched_ctx_t sched = {0};
 
-#ifdef CONFIG_NOEXIT_STATIC_THREADS
+#if CONFIG_NOEXIT_STATIC_THREADS
 # define _ACTIVE_THREADS() (sched.busy_n)
 #else
 # define _ACTIVE_THREADS() (sched.busy_n - sched.hole_n)
 #endif
 
-#ifdef COOP_DEBUG
+#if COOP_DEBUG
 static const char *_state_name(unsigned i)
 {
     switch (sched.thrds[i].state)
     {
     case EMPTY:
         return "EMPTY";
-# ifndef CONFIG_NOEXIT_STATIC_THREADS
+# if !CONFIG_NOEXIT_STATIC_THREADS
     case HOLE:
         return "HOLE";
 # endif
@@ -173,11 +173,11 @@ static const char *_state_name(unsigned i)
         return "NEW";
     case RUN:
         return "RUN";
-# ifdef CONFIG_OPT_IDLE
+# if CONFIG_OPT_IDLE
     case IDLE:
         return "IDLE";
 # endif
-# ifdef CONFIG_OPT_WAIT
+# if CONFIG_OPT_WAIT
     case WAIT:
         return "WAIT";
 # endif
@@ -202,7 +202,7 @@ static inline void _sched_init(bool force)
  * are defined as inline with all their local variables stored in registers.
  */
 
-#ifndef CONFIG_NOEXIT_STATIC_THREADS
+#if !CONFIG_NOEXIT_STATIC_THREADS
 /**
  * Mark threads whose stacks need to be unwinded.
  *
@@ -260,7 +260,7 @@ static inline unsigned _mark_unwind_thrds()
 }
 #endif
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
 /**
  * Check conditions and enter the system idle state if necessary.
  */
@@ -274,7 +274,7 @@ static inline void _system_idle(void)
     {
         if (i) {
             /* min_idle was set in the previous loop pass */
-# ifdef COOP_DEBUG
+# if COOP_DEBUG
             if (min_idle == COOP_MAX_TICK) {
                 coop_dbg_log_cb("System going idle infinitely\n");
             } else {
@@ -292,14 +292,14 @@ static inline void _system_idle(void)
         for (i = 0; i < CONFIG_MAX_THREADS; i++)
         {
             if (_IS_IDLE(sched.thrds[i].state)
-# ifdef CONFIG_OPT_WAIT
+# if CONFIG_OPT_WAIT
                 || (_IS_WAIT(sched.thrds[i].state) &&
                     !sched.thrds[i].wait_flgs.inf)
 # endif
                 )
             {
                 register coop_tick_t idle_to = (
-# ifdef CONFIG_OPT_WAIT
+# if CONFIG_OPT_WAIT
                     !_IS_IDLE(sched.thrds[i].state) ? sched.thrds[i].wait_to :
 # endif
                     sched.thrds[i].idle_to);
@@ -326,7 +326,7 @@ void coop_sched_service(void)
 {
     while (sched.busy_n > 0)
     {
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
         /*
          * The routine is called if currently handled thread passed through
          * NEW or RUN states, therefore circumstances which could switch the
@@ -352,13 +352,13 @@ next_iter:
         switch (sched.thrds[sched.cur_thrd].state)
         {
         case EMPTY:
-#ifndef CONFIG_NOEXIT_STATIC_THREADS
+#if !CONFIG_NOEXIT_STATIC_THREADS
         case HOLE:
 #endif
         default:
             goto next_iter;
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
         case IDLE:
             if (!COOP_IS_TICK_OVER(
                     coop_tick_cb(), sched.thrds[sched.cur_thrd].idle_to))
@@ -376,7 +376,7 @@ next_iter:
             goto run;
 #endif
 
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
         case WAIT:
             if (sched.thrds[sched.cur_thrd].wait_flgs.inf ||
                 !COOP_IS_TICK_OVER(
@@ -391,14 +391,14 @@ next_iter:
 
             /* wait time passed; continue as in RUN state  */
             sched.thrds[sched.cur_thrd].state = RUN;
-# ifdef CONFIG_OPT_IDLE
+# if CONFIG_OPT_IDLE
             sched.idle_n--;
 # endif
             goto run;
 #endif
 
         case RUN:
-#if defined(CONFIG_OPT_IDLE) || defined(CONFIG_OPT_WAIT)
+#if CONFIG_OPT_IDLE || CONFIG_OPT_WAIT
 run:
 #endif
             /* sched_pos_run: main-running scheduler execution context */
@@ -407,7 +407,7 @@ run:
                 coop_dbg_log_cb("setjmp sched_pos_run; run thread #%d: "
                     "longjmp thrd_pos_[new/run]\n", sched.cur_thrd);
 
-#ifdef CONFIG_OPT_YIELD_AFTER
+#if CONFIG_OPT_YIELD_AFTER
                 sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
 #endif
                 /* jump to running thread: thrd_pos_new, thrd_pos_run */
@@ -421,10 +421,10 @@ run:
             break;
 
         case NEW:
-#ifdef CONFIG_NOEXIT_STATIC_THREADS
+#if CONFIG_NOEXIT_STATIC_THREADS
             coop_dbg_log_cb("New thread #%d\n", sched.cur_thrd);
 
-# ifdef CONFIG_OPT_YIELD_AFTER
+# if CONFIG_OPT_YIELD_AFTER
             sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
 # endif
             /* enter the thread routine */
@@ -447,7 +447,7 @@ run:
                 sched.depth++;
                 sched.thrds[sched.cur_thrd].depth = sched.depth;
 
-# ifdef CONFIG_OPT_YIELD_AFTER
+# if CONFIG_OPT_YIELD_AFTER
                 sched.thrds[sched.cur_thrd].switch_tick = coop_tick_cb();
 # endif
                 /* enter the thread routine */
@@ -503,7 +503,7 @@ run:
         }
     }
 
-#ifdef CONFIG_NOEXIT_STATIC_THREADS
+#if CONFIG_NOEXIT_STATIC_THREADS
     /*
      * Can't exit the routine since stack has not been unwinded
      * up to its entry point. Assertion will fire in this case.
@@ -537,7 +537,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
                 (!stack_sz ? CONFIG_DEFAULT_STACK_SIZE : stack_sz);
             sched.thrds[i].arg = arg;
             sched.thrds[i].state = NEW;
-#ifndef CONFIG_NOEXIT_STATIC_THREADS
+#if !CONFIG_NOEXIT_STATIC_THREADS
             sched.thrds[i].depth = 0;
             memset(sched.thrds[i].entry_ctx, 0, sizeof(sched.thrds[i].entry_ctx));
 #endif
@@ -605,7 +605,7 @@ static inline void _yield(coop_thrd_state_t new_state)
         }
     } else {
         sched.thrds[sched.cur_thrd].state = new_state;
-#ifdef COOP_DEBUG
+#if COOP_DEBUG
         if (new_state != RUN) {
             coop_dbg_log_cb("Thread #%d: RUN -> %s\n",
                 sched.cur_thrd, _state_name(sched.cur_thrd));
@@ -628,7 +628,7 @@ static inline void _yield(coop_thrd_state_t new_state)
     }
 }
 
-#ifdef CONFIG_OPT_IDLE
+#if CONFIG_OPT_IDLE
 void coop_idle(coop_tick_t period)
 {
     coop_thrd_state_t new_state = RUN;
@@ -650,7 +650,7 @@ void coop_yield(void)
 }
 #endif
 
-#ifdef CONFIG_OPT_YIELD_AFTER
+#if CONFIG_OPT_YIELD_AFTER
 void coop_yield_after(coop_tick_t *after, coop_tick_t period)
 {
     if (COOP_IS_TICK_OVER(coop_tick_cb(), *after))
@@ -664,7 +664,7 @@ void coop_yield_after(coop_tick_t *after, coop_tick_t period)
 }
 #endif
 
-#ifdef CONFIG_OPT_WAIT
+#if CONFIG_OPT_WAIT
 coop_error_t coop_wait_cond(
     int sem_id, coop_tick_t timeout, coop_predic_proc_t predic, void *cv)
 {
@@ -685,7 +685,7 @@ coop_error_t coop_wait_cond(
         coop_dbg_log_cb("Thread #%d waiting infinitely; sem_id: %d\n",
             sched.cur_thrd, sem_id);
     }
-# ifdef CONFIG_OPT_IDLE
+# if CONFIG_OPT_IDLE
     sched.idle_n++;
 # endif
 
@@ -714,7 +714,7 @@ static inline void _notify(int sem_id, bool single)
 
             sched.thrds[i].wait_flgs.notif = 1;
             sched.thrds[i].state = RUN;
-# ifdef CONFIG_OPT_IDLE
+# if CONFIG_OPT_IDLE
             sched.idle_n--;
 # endif
             if (single) break;
@@ -733,7 +733,7 @@ void coop_notify_all(int sem_id)
 }
 #endif /* CONFIG_OPT_WAIT */
 
-#ifdef CONFIG_OPT_STACK_WM
+#if CONFIG_OPT_STACK_WM
 size_t coop_stack_wm()
 {
     size_t stack_sz = sched.thrds[sched.cur_thrd].stack_sz;
@@ -763,7 +763,7 @@ size_t coop_stack_wm()
 #ifdef __TEST__
 bool coop_test_is_shallow()
 {
-# ifdef CONFIG_NOEXIT_STATIC_THREADS
+# if CONFIG_NOEXIT_STATIC_THREADS
     return false;
 # else
     return (sched.depth == sched.thrds[sched.cur_thrd].depth);
