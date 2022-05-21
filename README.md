@@ -93,7 +93,7 @@ following example.
    terminated.
 
 3. Fig. 3. Thread 3 terminates. Since there is no working thread stacks between
-   the thread 3 stack and the thread 1 stack (now the last stack on the chain)
+   the thread 3 stack and the thread 1 stack (now the last stack in the chain)
    the stack is unwinded and the scheduler stack is now located on the position
    previously occupied by thread 2. From now all new thread stacks will be located
    over the thread 1 stack.
