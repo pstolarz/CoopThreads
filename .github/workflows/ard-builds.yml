@@ -1,0 +1,53 @@
+name: Arduino builds
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - synchronize
+defaults:
+  run:
+    shell: bash
+jobs:
+  ard_info:
+    runs-on: ubuntu-latest
+    container: ghcr.io/pstolarz/arduino-ci
+    steps:
+      - name: Arduino cores info
+        run: |
+          sudo arduino-cli update
+          sudo arduino-cli core list
+          sudo arduino-cli core list --updatable
+  ard_build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/pstolarz/arduino-ci
+    strategy:
+      matrix:
+        plat:
+          - arduino:avr:uno
+          - esp32:esp32:esp32
+          - esp8266:esp8266:generic
+        example:
+          - CoopBasic
+          - CoopIdle
+          - CoopWaitCond
+          - CoopWaitNotify
+          - CoopYieldAfter
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          if [[ "${{ matrix.example }}" = "CoopIdle" ]]; then
+            build_flags="-DCONFIG_IDLE_CB_ALT"
+          else
+            build_flags=""
+          fi
+          dir=$(basename `pwd`)
+          arch=/tmp/${dir}.zip
+          cd .. && zip -qr ${arch} ${dir} && cd -
+          sudo arduino-cli lib install --zip-path ${arch}
+          sudo arduino-cli compile -v -b ${{ matrix.plat }} \
+            --build-property "compiler.cpp.extra_flags=$build_flags" \
+            examples/${{ matrix.example }}/${{ matrix.example }}.ino

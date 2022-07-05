@@ -1,6 +1,7 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://vshymanskyy.github.io/StandWithUkraine/)
 
 # CoopThreads
+[![Arduino builds](https://github.com/pstolarz/CoopThreads/workflows/Arduino%20builds/badge.svg?branch=master)](https://github.com/pstolarz/CoopThreads/actions/workflows/ard-builds.yml)
 [![Tests status](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml/badge.svg?branch=master)](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/pstolarz/library/CoopThreads.svg)](https://registry.platformio.org/libraries/pstolarz/CoopThreads)
 <br>
