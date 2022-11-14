@@ -760,7 +760,7 @@ size_t coop_stack_wm()
 }
 #endif /* CONFIG_OPT_STACK_WM */
 
-#ifdef __TEST__
+#ifdef COOP_TEST
 bool coop_test_is_shallow()
 {
 # if CONFIG_NOEXIT_STATIC_THREADS

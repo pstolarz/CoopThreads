@@ -2,7 +2,7 @@
 .PHONY: all build clean lib libclean analyze
 
 LIBDIR=../../src
-CFLAGS+=-D__TEST__ -Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
+CFLAGS+=-DCOOP_TEST -Wall -DCOOP_CONFIG_FILE="\"test_config.h\"" -I$(LIBDIR) -I.
 
 LIBOBJS=\
     $(LIBDIR)/coop_threads.o \

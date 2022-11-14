@@ -312,7 +312,7 @@ void coop_dbg_log_cb(const char *format, ...);
 }
 #endif
 
-#ifdef __TEST__
+#ifdef COOP_TEST
 bool coop_test_is_shallow(void);
 unsigned coop_test_get_cur_thrd();
 void coop_test_set_cur_thrd(unsigned cur_thrd);
