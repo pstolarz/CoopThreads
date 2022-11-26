@@ -36,7 +36,7 @@ jobs:
           - CoopWaitNotify
           - CoopYieldAfter
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build
         run: |
           if [[ "${{ matrix.example }}" = "CoopIdle" ]]; then

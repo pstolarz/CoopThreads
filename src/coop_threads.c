@@ -520,8 +520,7 @@ coop_error_t coop_sched_thread(coop_thrd_proc_t proc, const char *name,
 {
     if (!proc) {
         return COOP_ERR_INV_ARG;
-    } else
-    if (sched.busy_n >= CONFIG_MAX_THREADS) {
+    } else if (sched.busy_n >= CONFIG_MAX_THREADS) {
         return COOP_ERR_LIMIT;
     }
 
