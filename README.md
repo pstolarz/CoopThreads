@@ -1,5 +1,5 @@
 # CoopThreads
-[![Arduino builds](https://github.com/pstolarz/CoopThreads/actions/workflows/ard-builds.yml/badge.svg?branch=master)](https://github.com/pstolarz/CoopThreads/actions/workflows/ard-builds.yml)
+[![Arduino builds](https://github.com/pstolarz/CoopThreads/actions/workflows/arduino-builds.yml/badge.svg?branch=master)](https://github.com/pstolarz/CoopThreads/actions/workflows/arduino-builds.yml)
 [![Tests status](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml/badge.svg?branch=master)](https://github.com/pstolarz/CoopThreads/actions/workflows/ut.yml)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/pstolarz/library/CoopThreads.svg)](https://registry.platformio.org/libraries/pstolarz/CoopThreads)
 <br>
